@@ -1,0 +1,5 @@
+@import 'tailwindcss';
+@import './components/library.css';
+@source '../views/**/*.blade.php';
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@theme { --font-sans: 'HomeReel Inter', sans-serif; }

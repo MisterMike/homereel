@@ -1,0 +1,410 @@
+@font-face {
+    font-family:'HomeReel Inter';
+    src:url('../../fonts/inter-latin.woff2') format('woff2');
+    font-weight:100 900;
+    font-display:swap}
+
+.home-app {
+    --surface:#191e23;
+    --muted:#acb6bf;
+    --accent:#a5dfcd;
+    margin:0;
+    background:#101418;
+    color:#edf2f3;
+    font-family:'HomeReel Inter',sans-serif;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    color-scheme:dark}
+
+.home-app *, .upload-panel * {
+    box-sizing:border-box}
+ [x-cloak] {
+    display:none!important}
+
+.home-app a {
+    text-decoration:none;
+    color:inherit}
+.home-app button,.upload-panel button {
+    cursor:pointer;
+    font:inherit}
+.home-app ::selection,.upload-panel ::selection {
+    background:#a5dfcd;
+    color:#101418}
+
+.home-app :focus-visible,.upload-panel :focus-visible {
+    outline:2px solid #a5dfcd;
+    outline-offset:4px}
+.home-app input,.upload-panel input {
+    caret-color:#a5dfcd}
+
+.site-header {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:24px;
+    padding:24px 4vw;
+    border-bottom:1px solid #30383e}
+.wordmark {
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+    font-weight:650;
+    font-size:22px;
+    letter-spacing:-.03em}
+.brand-mark {
+    color:#a5dfcd;
+    width:32px;
+    height:32px}
+.brand-mark svg {
+    width:100%;
+    height:100%}
+.private-label {
+    color:#acb6bf;
+    font-size:13px}
+.site-header nav {
+    display:flex;
+    align-items:center;
+    gap:24px;
+    font-size:14px}
+.site-header nav a:hover,.back-link:hover,.text-button:hover {
+    text-decoration:underline;
+    text-underline-offset:5px}
+
+.page-shell {
+    width:min(1440px,92vw);
+    margin:auto;
+    flex:1;
+    padding:56px 0 72px}
+.page-heading {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:24px;
+    margin-bottom:36px}
+.home-app h1 {
+    font-size:clamp(28px,3vw,42px);
+    font-weight:600;
+    letter-spacing:-.035em;
+    line-height:1.15;
+    text-wrap:balance}
+.page-heading p {
+    color:#acb6bf;
+    margin-top:12px}
+.button {
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    border:1px solid transparent;
+    border-radius:7px;
+    padding:12px 20px;
+    background:#a5dfcd;
+    color:#10261f!important;
+    font-weight:600;
+    line-height:1.4;
+    transition:background .18s}
+.button:hover {
+    background:#bfeedd}
+.button:disabled,.text-button:disabled {
+    opacity:.45;
+    cursor:default}
+.button-secondary {
+    background:transparent;
+    border-color:#76858e;
+    color:inherit!important}
+.text-button {
+    border:0;
+    background:none;
+    color:inherit;
+    padding:0}
+.video-grid {
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:36px 24px}
+.video-card {
+    min-width:0}
+.video-cover {
+    position:relative;
+    aspect-ratio:16/9;
+    background:#20282f;
+    border-radius:9px;
+    overflow:hidden;
+    display:grid;
+    place-items:center}
+.video-cover img {
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    transition:transform .2s}
+.video-card:hover img {
+    transform:scale(1.025)}
+.cover-placeholder {
+    color:#b5c1c9;
+    font-size:14px}
+.duration {
+    position:absolute;
+    right:10px;
+    bottom:10px;
+    padding:3px 7px;
+    border-radius:4px;
+    background:#101418eb;
+    font-size:12px;
+    font-variant-numeric:tabular-nums}
+.video-card h2 {
+    font-size:17px;
+    font-weight:550;
+    margin:13px 0 5px;
+    overflow-wrap:anywhere}
+.video-card p,.video-meta {
+    font-size:13px;
+    color:#acb6bf}
+.empty-state {
+    grid-column:1/-1;
+    padding:72px 0;
+    border-top:1px solid #30383e}
+.empty-state h2 {
+    font-size:25px;
+    margin-bottom:14px}
+.empty-state p {
+    max-width:60ch;
+    color:#acb6bf;
+    line-height:1.8}
+.site-footer {
+    width:92vw;
+    margin:0 auto;
+    padding:24px 0;
+    border-top:1px solid #30383e;
+    display:flex;
+    justify-content:space-between;
+    gap:16px;
+    color:#acb6bf;
+    font-size:12px}
+.back-link {
+    display:inline-block;
+    margin-bottom:24px;
+    color:#acb6bf!important;
+    font-size:14px}
+.video-player {
+    width:100%;
+    max-height:75vh;
+    aspect-ratio:16/9;
+    background:#000;
+    border-radius:8px}
+.video-description {
+    max-width:75ch;
+    margin-top:30px}
+.video-description h1 {
+    overflow-wrap:anywhere}
+.video-meta {
+    margin-top:14px}
+.description-text {
+    white-space:pre-line;
+    overflow-wrap:anywhere;
+    line-height:1.8;
+    margin-top:26px}
+.notice {
+    padding:16px 0;
+    color:#e7d7b2;
+    font-size:14px;
+    line-height:1.7}
+.processing-state {
+    padding:64px 32px;
+    background:#191e23;
+    border-radius:8px}
+.processing-state h2 {
+    font-size:24px;
+    margin-bottom:16px}
+.processing-state p {
+    color:#acb6bf;
+    line-height:1.8}
+.login-layout {
+    display:grid;
+    grid-template-columns:1.2fr 1fr;
+    gap:12%;
+    align-items:center;
+    min-height:65vh}
+.login-intro h1 {
+    font-size:clamp(36px,4.6vw,64px);
+    line-height:1.1}
+.login-intro p {
+    color:#acb6bf;
+    font-size:18px;
+    line-height:1.8;
+    margin-top:28px}
+.login-form {
+    max-width:400px;
+    width:100%}
+.login-form h2 {
+    font-size:27px;
+    font-weight:550;
+    letter-spacing:-.025em}
+.login-form>p {
+    color:#acb6bf;
+    margin:12px 0 30px}
+.login-form label,.upload-panel label {
+    display:block;
+    font-size:14px;
+    margin-bottom:9px}
+.text-input {
+    display:block;
+    width:100%;
+    border:1px solid #59646e;
+    border-radius:6px;
+    background:#191e23;
+    color:#edf2f3;
+    padding:12px 14px;
+    font:inherit;
+    margin-bottom:22px}
+.text-input:disabled {
+    opacity:.65}
+.login-form .button {
+    width:100%;
+    margin-top:8px}
+.login-form .access-note {
+    margin-top:28px;
+    font-size:13px;
+    line-height:1.7}
+.form-error {
+    color:#ffb4ad;
+    line-height:1.6;
+    margin:16px 0}
+.pagination {
+    margin-top:32px}
+
+.upload-panel {
+    max-width:760px;
+    color:#edf2f3;
+    background:#191e23;
+    padding:32px;
+    border-radius:10px;
+    font-family:'HomeReel Inter',sans-serif;
+    color-scheme:dark}
+.upload-panel h2 {
+    font-size:26px;
+    letter-spacing:-.025em;
+    font-weight:600;
+    margin:0 0 14px}
+.upload-panel p {
+    line-height:1.7;
+    margin-bottom:20px;
+    color:#bac5ce}
+.upload-panel .file-picker {
+    margin-top:28px;
+    padding:24px;
+    border:1px dashed #76858e;
+    border-radius:6px}
+.file-picker input {
+    display:block;
+    margin-top:14px;
+    font-size:14px;
+    max-width:100%}
+.file-picker input::file-selector-button {
+    background:#303d46;
+    border:0;
+    border-radius:4px;
+    padding:8px 12px;
+    color:#edf2f3;
+    margin-right:12px;
+    cursor:pointer}
+.file-details {
+    font-size:14px;
+    overflow-wrap:anywhere}
+.upload-progress {
+    margin:24px 0;
+    font-variant-numeric:tabular-nums}
+.upload-progress progress {
+    display:block;
+    width:100%;
+    height:10px;
+    accent-color:#a5dfcd}
+.upload-progress p {
+    margin-top:10px;
+    font-size:14px}
+.upload-actions {
+    display:flex;
+    gap:12px;
+    align-items:center;
+    flex-wrap:wrap;
+    margin:24px 0}
+.upload-actions .text-button {
+    font-size:13px}
+.upload-panel .form-error {
+    color:#ffb4ad}
+.upload-panel .upload-note {
+    font-size:13px;
+    margin:28px 0 0;
+    color:#bac5ce}
+
+@media(max-width:950px) {
+    .video-grid {
+    grid-template-columns:repeat(2,minmax(0,1fr))}
+.login-layout {
+    gap:7%}
+.login-intro p {
+    font-size:16px}
+}
+
+@media(max-width:600px) {
+    .site-header {
+    padding:18px 5vw;
+    gap:14px;
+    flex-wrap:wrap}
+.site-header nav {
+    gap:16px;
+    font-size:12px}
+.private-label {
+    display:none}
+.wordmark {
+    font-size:20px}
+.page-shell {
+    width:90vw;
+    padding:32px 0 48px}
+.page-heading {
+    align-items:flex-start;
+    flex-direction:column;
+    margin-bottom:28px}
+.video-grid {
+    grid-template-columns:1fr;
+    gap:28px}
+.login-layout {
+    display:block;
+    min-height:0}
+.login-intro {
+    margin-bottom:44px}
+.login-intro h1 {
+    font-size:39px}
+.login-intro p {
+    margin-top:18px}
+.login-form {
+    max-width:none}
+.site-footer {
+    width:90vw;
+    flex-wrap:wrap}
+.video-description h1 {
+    font-size:28px}
+.upload-panel {
+    padding:22px}
+.upload-panel h2 {
+    font-size:24px}
+.upload-actions {
+    align-items:stretch}
+.empty-state {
+    padding:36px 0}
+}
+
+@media(prefers-reduced-motion:reduce) {
+    .home-app *,.upload-panel * {
+    transition:none!important}
+}
+
+
+.upload-progress progress::-webkit-progress-bar {
+    background:#34414a;
+    border-radius:5px}
+.upload-progress progress::-webkit-progress-value {
+    background:#a5dfcd;
+    border-radius:5px}
+.upload-progress progress::-moz-progress-bar {
+    background:#a5dfcd;
+    border-radius:5px}
+

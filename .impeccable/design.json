@@ -1,0 +1,273 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-22T12:54:22.732970+00:00",
+  "title": "Design System: HomeReel",
+  "extensions": {
+    "shadows": [],
+    "motion": [
+      {
+        "name": "button-background",
+        "value": "background .18s",
+        "purpose": "Custom button hover."
+      },
+      {
+        "name": "cover-image",
+        "value": "transform .2s",
+        "purpose": "Thumbnail hover scale 1.025; disabled under reduced motion."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "tablet",
+        "value": "950px"
+      },
+      {
+        "name": "phone",
+        "value": "600px"
+      }
+    ],
+    "colorMeta": {
+      "canvas": {
+        "role": "neutral",
+        "displayName": "Canvas",
+        "tonalRamp": [
+          "oklch(15% 0.0103 248.37)",
+          "oklch(26% 0.0103 248.37)",
+          "oklch(38% 0.0103 248.37)",
+          "oklch(49% 0.0103 248.37)",
+          "oklch(61% 0.0103 248.37)",
+          "oklch(72% 0.0103 248.37)",
+          "oklch(84% 0.0103 248.37)",
+          "oklch(95% 0.0103 248.37)"
+        ]
+      },
+      "panel": {
+        "role": "neutral",
+        "displayName": "Panel",
+        "tonalRamp": [
+          "oklch(15% 0.0122 248.35)",
+          "oklch(26% 0.0122 248.35)",
+          "oklch(38% 0.0122 248.35)",
+          "oklch(49% 0.0122 248.35)",
+          "oklch(61% 0.0122 248.35)",
+          "oklch(72% 0.0122 248.35)",
+          "oklch(84% 0.0122 248.35)",
+          "oklch(95% 0.0122 248.35)"
+        ]
+      },
+      "cover": {
+        "role": "neutral",
+        "displayName": "Cover",
+        "tonalRamp": [
+          "oklch(15% 0.0173 244.90)",
+          "oklch(26% 0.0173 244.90)",
+          "oklch(38% 0.0173 244.90)",
+          "oklch(49% 0.0173 244.90)",
+          "oklch(61% 0.0173 244.90)",
+          "oklch(72% 0.0173 244.90)",
+          "oklch(84% 0.0173 244.90)",
+          "oklch(95% 0.0173 244.90)"
+        ]
+      },
+      "text": {
+        "role": "neutral",
+        "displayName": "Text",
+        "tonalRamp": [
+          "oklch(15% 0.0055 211.04)",
+          "oklch(26% 0.0055 211.04)",
+          "oklch(38% 0.0055 211.04)",
+          "oklch(49% 0.0055 211.04)",
+          "oklch(61% 0.0055 211.04)",
+          "oklch(72% 0.0055 211.04)",
+          "oklch(84% 0.0055 211.04)",
+          "oklch(95% 0.0055 211.04)"
+        ]
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Muted",
+        "tonalRamp": [
+          "oklch(15% 0.0170 245.15)",
+          "oklch(26% 0.0170 245.15)",
+          "oklch(38% 0.0170 245.15)",
+          "oklch(49% 0.0170 245.15)",
+          "oklch(61% 0.0170 245.15)",
+          "oklch(72% 0.0170 245.15)",
+          "oklch(84% 0.0170 245.15)",
+          "oklch(95% 0.0170 245.15)"
+        ]
+      },
+      "accent": {
+        "role": "primary",
+        "displayName": "Accent",
+        "tonalRamp": [
+          "oklch(15% 0.0644 173.59)",
+          "oklch(26% 0.0644 173.59)",
+          "oklch(38% 0.0644 173.59)",
+          "oklch(49% 0.0644 173.59)",
+          "oklch(61% 0.0644 173.59)",
+          "oklch(72% 0.0644 173.59)",
+          "oklch(84% 0.0644 173.59)",
+          "oklch(95% 0.0644 173.59)"
+        ]
+      },
+      "accent-hover": {
+        "role": "primary",
+        "displayName": "Accent Hover",
+        "tonalRamp": [
+          "oklch(15% 0.0536 171.04)",
+          "oklch(26% 0.0536 171.04)",
+          "oklch(38% 0.0536 171.04)",
+          "oklch(49% 0.0536 171.04)",
+          "oklch(61% 0.0536 171.04)",
+          "oklch(72% 0.0536 171.04)",
+          "oklch(84% 0.0536 171.04)",
+          "oklch(95% 0.0536 171.04)"
+        ]
+      },
+      "accent-ink": {
+        "role": "primary",
+        "displayName": "Accent Ink",
+        "tonalRamp": [
+          "oklch(15% 0.0314 170.89)",
+          "oklch(26% 0.0314 170.89)",
+          "oklch(38% 0.0314 170.89)",
+          "oklch(49% 0.0314 170.89)",
+          "oklch(61% 0.0314 170.89)",
+          "oklch(72% 0.0314 170.89)",
+          "oklch(84% 0.0314 170.89)",
+          "oklch(95% 0.0314 170.89)"
+        ]
+      },
+      "border": {
+        "role": "neutral",
+        "displayName": "Border",
+        "tonalRamp": [
+          "oklch(15% 0.0152 240.39)",
+          "oklch(26% 0.0152 240.39)",
+          "oklch(38% 0.0152 240.39)",
+          "oklch(49% 0.0152 240.39)",
+          "oklch(61% 0.0152 240.39)",
+          "oklch(72% 0.0152 240.39)",
+          "oklch(84% 0.0152 240.39)",
+          "oklch(95% 0.0152 240.39)"
+        ]
+      },
+      "input-border": {
+        "role": "neutral",
+        "displayName": "Input Border",
+        "tonalRamp": [
+          "oklch(15% 0.0210 245.66)",
+          "oklch(26% 0.0210 245.66)",
+          "oklch(38% 0.0210 245.66)",
+          "oklch(49% 0.0210 245.66)",
+          "oklch(61% 0.0210 245.66)",
+          "oklch(72% 0.0210 245.66)",
+          "oklch(84% 0.0210 245.66)",
+          "oklch(95% 0.0210 245.66)"
+        ]
+      },
+      "control-border": {
+        "role": "neutral",
+        "displayName": "Control Border",
+        "tonalRamp": [
+          "oklch(15% 0.0223 234.10)",
+          "oklch(26% 0.0223 234.10)",
+          "oklch(38% 0.0223 234.10)",
+          "oklch(49% 0.0223 234.10)",
+          "oklch(61% 0.0223 234.10)",
+          "oklch(72% 0.0223 234.10)",
+          "oklch(84% 0.0223 234.10)",
+          "oklch(95% 0.0223 234.10)"
+        ]
+      },
+      "error": {
+        "role": "error",
+        "displayName": "Error",
+        "tonalRamp": [
+          "oklch(15% 0.0887 25.08)",
+          "oklch(26% 0.0887 25.08)",
+          "oklch(38% 0.0887 25.08)",
+          "oklch(49% 0.0887 25.08)",
+          "oklch(61% 0.0887 25.08)",
+          "oklch(72% 0.0887 25.08)",
+          "oklch(84% 0.0887 25.08)",
+          "oklch(95% 0.0887 25.08)"
+        ]
+      }
+    }
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Primary action.",
+      "html": "<button class=\"ds-button-primary\">Upload video</button>",
+      "css": ".ds-button-primary{font-family:'HomeReel Inter',sans-serif;padding:12px 20px;border:1px solid transparent;border-radius:7px;background:#a5dfcd;color:#10261f;font-weight:600;line-height:1.4;cursor:pointer;transition:background .18s;} .ds-button-primary:hover{background:#bfeedd;} .ds-button-primary:focus-visible{outline:2px solid #a5dfcd;outline-offset:4px;} .ds-button-primary:disabled{opacity:.45;cursor:default;} @media(prefers-reduced-motion:reduce){.ds-button-primary{transition:none;}}"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Outlined upload pause action; shared hover background retained.",
+      "html": "<button class=\"ds-button-secondary\">Pause</button>",
+      "css": ".ds-button-secondary{font-family:'HomeReel Inter',sans-serif;padding:12px 20px;border:1px solid #76858e;border-radius:7px;background:transparent;color:#edf2f3;font-weight:600;line-height:1.4;cursor:pointer;transition:background .18s;} .ds-button-secondary:hover{background:#bfeedd;} .ds-button-secondary:focus-visible{outline:2px solid #a5dfcd;outline-offset:4px;} .ds-button-secondary:disabled{opacity:.45;cursor:default;} @media(prefers-reduced-motion:reduce){.ds-button-secondary{transition:none;}}"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Shared login and upload field.",
+      "html": "<label class=\"ds-label\" for=\"ds-title\">Video title</label><input id=\"ds-title\" class=\"ds-input\" placeholder=\"Video title\">",
+      "css": ".ds-label{font-family:'HomeReel Inter',sans-serif;display:block;color:#edf2f3;font-size:14px;margin-bottom:9px;} .ds-input{font-family:'HomeReel Inter',sans-serif;width:100%;padding:12px 14px;border:1px solid #59646e;border-radius:6px;background:#191e23;color:#edf2f3;caret-color:#a5dfcd;} .ds-input:focus-visible{outline:2px solid #a5dfcd;outline-offset:4px;} .ds-input:disabled{opacity:.65;}"
+    },
+    {
+      "name": "Navigation",
+      "kind": "nav",
+      "description": "Compact text navigation with wrapping phone layout.",
+      "html": "<nav class=\"ds-nav\" aria-label=\"Main navigation\"><a href=\"#library\">Library</a><a href=\"#manage\">Manage videos</a></nav>",
+      "css": ".ds-nav{font-family:'HomeReel Inter',sans-serif;display:flex;flex-wrap:wrap;gap:24px;font-size:14px;} .ds-nav a{color:#edf2f3;text-decoration:none;} .ds-nav a:hover{text-decoration:underline;text-underline-offset:5px;} .ds-nav a:focus-visible{outline:2px solid #a5dfcd;outline-offset:4px;} @media(max-width:600px){.ds-nav{gap:16px;font-size:12px;}}"
+    },
+    {
+      "name": "Video Card",
+      "kind": "card",
+      "refersTo": "cover",
+      "description": "Linked cover, title and date; status placeholder represents an absent thumbnail.",
+      "html": "<a class=\"ds-card\" href=\"#video\"><div class=\"ds-cover\">Ready to watch<span class=\"ds-duration\">02:18</span></div><h2>Video title</h2><p>22 Nov 2026</p></a>",
+      "css": ".ds-card{font-family:'HomeReel Inter',sans-serif;display:block;color:#edf2f3;text-decoration:none;min-width:0;} .ds-cover{position:relative;aspect-ratio:16/9;background:#20282f;border-radius:9px;display:grid;place-items:center;color:#b5c1c9;font-size:14px;overflow:hidden;} .ds-duration{position:absolute;right:10px;bottom:10px;padding:3px 7px;border-radius:4px;background:#101418eb;color:#edf2f3;font-size:12px;font-variant-numeric:tabular-nums;} .ds-card h2{font-size:17px;font-weight:550;margin:13px 0 5px;overflow-wrap:anywhere;} .ds-card p{font-size:13px;color:#acb6bf;} .ds-card:hover img{transform:scale(1.025);} .ds-card:focus-visible{outline:2px solid #a5dfcd;outline-offset:4px;}"
+    },
+    {
+      "name": "Upload Progress",
+      "kind": "custom",
+      "description": "Native progress bar shows server-confirmed bytes.",
+      "html": "<div class=\"ds-progress\"><progress aria-label=\"Upload 40% complete\" max=\"100\" value=\"40\"></progress><p><strong>40%</strong> confirmed</p></div>",
+      "css": ".ds-progress{font-family:'HomeReel Inter',sans-serif;color:#bac5ce;font-variant-numeric:tabular-nums;} .ds-progress progress{display:block;width:100%;height:10px;accent-color:#a5dfcd;} .ds-progress progress::-webkit-progress-bar{background:#34414a;border-radius:5px;} .ds-progress progress::-webkit-progress-value{background:#a5dfcd;border-radius:5px;} .ds-progress progress::-moz-progress-bar{background:#a5dfcd;border-radius:5px;} .ds-progress p{margin-top:10px;font-size:14px;line-height:1.7;}"
+    }
+  ],
+  "narrative": {
+    "northStar": "A quiet private screening room",
+    "overview": "Dark slate surfaces, generous video imagery and mint controls keep the family collection central. The implementation is deliberately modest: a restrained wordmark, small metadata and direct, familiar controls.\n\nThe source of these tokens is `resources/css/components/library.css`, used by the Blade viewing interface and the custom upload panel. The administration shell retains Filament's existing components and configured Teal primary palette; extend that shell with its native conventions rather than restyling it to imitate the viewing interface.",
+    "keyCharacteristics": [
+      "Dark surfaces with clear, quiet separation.",
+      "Image-led browsing and compact metadata.",
+      "Visible keyboard focus and honest operational feedback."
+    ],
+    "rules": [
+      {
+        "name": "The Focus Rule",
+        "body": "Interactive controls in the custom interface retain a visible mint outline with an offset.",
+        "section": "colors"
+      }
+    ],
+    "dos": [
+      "**Do** reuse the custom controls and spacing roles on new viewing surfaces.",
+      "**Do** use Filament components and its configured Teal palette for administration shell extensions.",
+      "**Do** preserve visible focus, reduced motion, live feedback and native playback controls."
+    ],
+    "donts": [
+      "**Don't** invent family imagery or replace the honest empty state with decorative footage.",
+      "**Don't** add decorative effects or elaborate branding that exceeds the modest polish brief."
+    ]
+  }
+}
