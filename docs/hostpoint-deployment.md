@@ -88,9 +88,9 @@ Do not configure sync queues or after-response processing for video inspection. 
 
 ## Optional MP4 conversion: hosting approval required
 
-Keep `VIDEO_OPTIMIZATION_ENABLED=false` until Hostpoint confirms sustained FFmpeg CPU use and long CLI jobs are permitted. Thumbnail permission alone does not establish permission for full-video encoding. A short cron worker cannot divide a conversion into short requests. The default FFmpeg process timeout is 3600 seconds; this may be unsuitable for Smart shared hosting. Test a representative clip with the host's approval first. The safe fallback is original playback with conversion disabled, or a future external conversion service.
+Keep conversion disabled in **Admin → Video settings** (and `VIDEO_OPTIMIZATION_ENABLED=false` as the initial environment default) until Hostpoint confirms sustained FFmpeg CPU use and long CLI jobs are permitted. Thumbnail permission alone does not establish permission for full-video encoding. A short cron worker cannot divide a conversion into short requests. The default FFmpeg process timeout is 3600 seconds; this may be unsuitable for Smart shared hosting. Test a representative clip with the host's approval first. The safe fallback is original playback with conversion disabled, or a future external conversion service.
 
-If approved, enable optimization, optionally enable automatic conversion after inspection, and add a separate worker under its own non-overlap lock:
+The database settings take precedence after the first admin save, so changing environment defaults alone does not disable a previously enabled site. If approved, enable optimization in **Admin → Video settings**, optionally enable automatic conversion after inspection, and add a separate worker under its own non-overlap lock:
 
 ```cron
 * * * * * cd /absolute/current-release && /usr/bin/flock -n /absolute/private/homereel-transcoding.lock /absolute/php artisan queue:work transcoding --queue=transcoding --stop-when-empty --max-time=50 --tries=1 --timeout=3690 >> /absolute/private/transcoding.log 2>&1

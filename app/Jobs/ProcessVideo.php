@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Enums\VideoStatus;
 use App\Models\Video;
+use App\Services\Video\ConversionSettings;
 use App\Services\Video\MediaLock;
 use App\Services\Video\VideoInspector;
 use App\Services\Video\VideoOptimization;
@@ -68,7 +69,7 @@ class ProcessVideo implements ShouldQueue
                 throw $e;
             }
         });
-        if (config('video.optimization_enabled') && config('video.optimization_auto')) {
+        if (app(ConversionSettings::class)->automatic()) {
             try {
                 app(VideoOptimization::class)->queue($video);
             } catch (\Throwable $exception) {

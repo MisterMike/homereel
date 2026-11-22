@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Enums\VideoStatus;
 use App\Models\Video;
+use App\Services\Video\ConversionSettings;
 use App\Services\Video\MediaLock;
 use App\Services\Video\VideoOptimizer;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -41,7 +42,7 @@ class OptimizeVideo implements ShouldQueue
                     if ($video->optimization_token !== $this->token || $video->hasOptimizedCopy()) {
                         return false;
                     }
-                    if ($video->trashed() || $video->status !== VideoStatus::Ready || ! config('video.optimization_enabled')) {
+                    if ($video->trashed() || $video->status !== VideoStatus::Ready || ! app(ConversionSettings::class)->enabled()) {
                         $video->update(['optimization_status' => 'failed', 'optimization_reserved_bytes' => 0, 'optimization_error' => 'Optimization was cancelled. The original is retained.']);
 
                         return false;

@@ -12,7 +12,7 @@ class VideoOptimization
 {
     public function queue(Video $video): void
     {
-        abort_unless(config('video.optimization_enabled'), 409, 'MP4 optimization is disabled on this server.');
+        abort_unless(app(ConversionSettings::class)->enabled(), 409, 'MP4 optimization is disabled on this server.');
         app(MediaLock::class)->run($video->uuid, function () use ($video): void {
             app(MediaLock::class)->run('quota', function () use ($video): void {
                 DB::transaction(function () use ($video): void {

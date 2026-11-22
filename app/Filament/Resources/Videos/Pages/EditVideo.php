@@ -6,6 +6,7 @@ use App\Enums\VideoStatus;
 use App\Filament\Resources\Videos\VideoResource;
 use App\Jobs\GenerateVideoThumbnail;
 use App\Jobs\ProcessVideo;
+use App\Services\Video\ConversionSettings;
 use App\Services\Video\VideoOptimization;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
@@ -50,7 +51,7 @@ class EditVideo extends EditRecord
     {
         return [
             Action::make('optimize')->label(fn (): string => $this->record->optimization_status === 'failed' ? 'Retry MP4 optimization' : 'Create optimized MP4')->icon('heroicon-o-film')
-                ->visible(fn (): bool => config('video.optimization_enabled') && ! $this->record->hasOptimizedCopy())
+                ->visible(fn (): bool => app(ConversionSettings::class)->enabled() && ! $this->record->hasOptimizedCopy())
                 ->disabled(fn (): bool => $this->record->status !== VideoStatus::Ready || in_array($this->record->optimization_status, ['queued', 'processing'], true))
                 ->requiresConfirmation()->modalDescription('Create a private H.264/AAC MP4 up to 720p. The original stays intact and playable. Conversion may take several minutes.')
                 ->action(function (): void {
