@@ -12,5 +12,8 @@ return [
     'ffprobe' => env('FFPROBE_PATH', 'ffprobe'),
     'ffmpeg' => env('FFMPEG_PATH', 'ffmpeg'),
     'thumbnails' => (bool) env('VIDEO_THUMBNAILS', false),
+    'optimization_enabled' => (bool) env('VIDEO_OPTIMIZATION_ENABLED', false),
+    'optimization_auto' => (bool) env('VIDEO_OPTIMIZATION_AUTO', false),
+    'optimization_timeout' => (int) env('VIDEO_OPTIMIZATION_TIMEOUT', 3600),
     'process_timeout' => (int) env('VIDEO_PROCESS_TIMEOUT', 60),
 ];

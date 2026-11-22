@@ -4,8 +4,10 @@ namespace App\Console\Commands;
 
 use App\Models\Video;
 use App\Services\Video\MediaLock;
+use App\Services\Video\VideoOptimizer;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class PurgeVideos extends Command
 {
@@ -21,15 +23,31 @@ class PurgeVideos extends Command
             return self::FAILURE;
         }
         Video::onlyTrashed()->where('deleted_at', '<=', now()->subDays((int) $this->option('days')))->each(function ($video) use ($lock) {
-            $lock->run($video->uuid, function () use ($video) {
-                $video->refresh();
-                if (! $video->trashed()) {
-                    return;
+            try {
+                $lock->run('optimization-'.$video->uuid, function () use ($video, $lock) {
+                    $lock->run($video->uuid, function () use ($video) {
+                        $video->refresh();
+                        if (! $video->trashed()) {
+                            return;
+                        }
+                        $disk = Storage::disk(config('video.disk'));
+                        $paths = [$video->storage_path, $video->thumbnail_path, $video->optimized_path];
+                        if ($video->optimization_token) {
+                            $paths[] = app(VideoOptimizer::class)->temporaryPath($video, $video->optimization_token);
+                            $paths[] = app(VideoOptimizer::class)->finalPath($video, $video->optimization_token);
+                        }
+                        if (! $disk->delete(array_filter($paths))) {
+                            throw new \RuntimeException('Some media files could not be purged; the database record was retained.');
+                        }
+                        $video->forceDelete();
+                    });
+                });
+            } catch (HttpException $exception) {
+                if ($exception->getStatusCode() !== 409) {
+                    throw $exception;
                 }
-                $disk = Storage::disk(config('video.disk'));
-                $disk->delete(array_filter([$video->storage_path, $video->thumbnail_path]));
-                $video->forceDelete();
-            });
+                $this->warn('Skipped busy video '.$video->uuid.'. Retry after processing finishes.');
+            }
         });
         $this->info('Eligible deleted videos purged.');
 

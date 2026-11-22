@@ -17,7 +17,12 @@ class Video extends Model
 
     protected function casts(): array
     {
-        return ['status' => VideoStatus::class, 'prototype_available' => 'boolean', 'browser_compatible' => 'boolean', 'file_size' => 'integer', 'duration_seconds' => 'float', 'thumbnail_offset_seconds' => 'float'];
+        return ['status' => VideoStatus::class, 'prototype_available' => 'boolean', 'browser_compatible' => 'boolean', 'file_size' => 'integer', 'duration_seconds' => 'float', 'thumbnail_offset_seconds' => 'float', 'optimized_file_size' => 'integer', 'optimization_reserved_bytes' => 'integer'];
+    }
+
+    public function hasOptimizedCopy(): bool
+    {
+        return $this->optimization_status === 'ready' && filled($this->optimized_path);
     }
 
     public function getRouteKeyName(): string

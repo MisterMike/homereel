@@ -73,7 +73,7 @@ Use `.env.example`; never commit `.env`, session data, databases or media. SQLit
 | VIDEO_THUMBNAILS | false; opt in only where CPU use is permitted |
 | VIDEO_PROCESS_TIMEOUT | 60 seconds per process; align worker timeout and retry_after |
 
-Keep the database queue on the same database connection as the app (leave DB_QUEUE_CONNECTION unset). Job insertion and upload completion share one transaction. Reserve account space beyond the application quota for thumbnails, logs, DBs, backups and other hosted sites. Quotas count reservations, originals, and retained deleted originals; they are not an account-wide disk monitor. Monitor physical free space separately.
+Keep the database queue on the same database connection as the app (leave DB_QUEUE_CONNECTION unset). Job insertion and upload completion share one transaction. Reserve account space beyond the application quota for thumbnails, logs, DBs, backups and other hosted sites. Quotas count upload and optimization reservations, originals, optimized copies, and retained deleted files; they are not an account-wide disk monitor. Monitor physical free space separately.
 
 ## Upload architecture and protocol
 
@@ -100,9 +100,29 @@ Cleanup removes expired temporary files and marks sessions expired, under the sa
 
 ## Processing and playback
 
-The database queue runs FFprobe with argument arrays to extract duration, resolution, codecs and container. Processes permit only the local file protocol, no network fetching. FFmpeg thumbnails use one thread, one frame and a 640px target width when enabled. Probe failures retain the original, mark failed and retry up to three times. Thumbnail failure is logged but does not prevent playback. Administrators can choose a per-video thumbnail time in seconds on the edit page, or leave it blank for automatic selection (5 seconds, or one third of a short clip). Saving a changed time or clicking Generate thumbnail queues regeneration. The current preview stays available until a new image has been generated successfully; failed attempts retain the previous preview and original. Refresh the edit page after the worker runs to see the new preview. Failed videos can be retried from their Filament edit page. This is inspection only: there is no transcoding or optimized playback copy.
+The database queue runs FFprobe with argument arrays to extract duration, resolution, codecs and container. Processes permit only the local file protocol, no network fetching. FFmpeg thumbnails use one thread, one frame and a 640px target width when enabled. Probe failures retain the original, mark failed and retry up to three times. Thumbnail failure is logged but does not prevent playback. Administrators can choose a per-video thumbnail time in seconds on the edit page, or leave it blank for automatic selection (5 seconds, or one third of a short clip). Saving a changed time or clicking Generate thumbnail queues regeneration. The current preview stays available until a new image has been generated successfully; failed attempts retain the previous preview and original. Refresh the edit page after the worker runs to see the new preview. Failed videos can be retried from their Filament edit page. Optional MP4 optimization is described below.
 
-MP4/H.264/AAC is conservatively marked compatible; codec support can still vary by device and encoding profile. Other accepted originals show a playback warning. Non-fast-start MP4 may require extra seeks. Original and any future optimized version must remain distinct.
+MP4/H.264/AAC is conservatively marked compatible; codec support can still vary by device and encoding profile. Other accepted originals show a playback warning. Non-fast-start MP4 may require extra seeks. Original and optimized metadata and files remain distinct.
+
+### Optional optimized MP4
+
+Enable `VIDEO_OPTIMIZATION_ENABLED=true` only where sustained FFmpeg CPU use is permitted. `VIDEO_OPTIMIZATION_AUTO=true` queues a copy after successful inspection; otherwise use **Create optimized MP4** on the Filament video edit page (also works for existing videos). Production defaults are off. Local DDEV has this enabled. Refresh the edit page to see queued / processing / ready / failed status; failures offer a retry action.
+
+One separate private MP4 is generated with H.264 / AAC, yuv420p, CRF 23, veryfast preset, up to 1280×720 without upscaling, capped video bitrate 2500 kbit/s, stereo audio 128 kbit/s, one encoding thread, and faststart metadata. This is a single rendition, not HLS or adaptive streaming. Already compact originals may not become smaller. Rotation is handled by FFmpeg; unusual HDR, interlaced or anamorphic sources may need a later specialized conversion pipeline.
+
+Run its **separate queue connection**:
+
+```sh
+php artisan queue:work transcoding --queue=transcoding --stop-when-empty --max-time=50 --tries=1 --timeout=3690
+# DDEV:
+ddev artisan queue:work transcoding --queue=transcoding --stop-when-empty --max-time=50 --tries=1 --timeout=3690
+```
+
+`VIDEO_OPTIMIZATION_TIMEOUT` defaults to 3600 seconds per FFmpeg process. Job timeout is that value + 90; the dedicated database connection reserves jobs for that value + 180. Keep the worker timeout aligned and do not consume the transcoding queue through the ordinary database connection (its retry_after is only 300 seconds). Conversion attempts are not automatically repeated after a failure. Use the edit-page retry after checking logs. DDEV's `.ddev/web-build/time.cron` runs both queues independently under separate flock locks; after editing that file run `ddev restart` to install the new crontab. `--max-time` only stops between jobs; a conversion can run much longer than a minute.
+
+Storage is reserved before queueing based on duration and capped bitrate. The reservation and completed copy count towards the same allowance as uploads. Encoding writes a unique private `.part.mp4`, verifies format, duration and size with FFprobe, then publishes it by rename. Failures discard only the incomplete derivative and release its reservation. Originals stay ready and usable throughout. Separate encode locks prevent concurrent encodes and permanent purges while encoding; thumbnails need not wait for an entire conversion. A hard machine crash may leave a partial derivative until the expired queue reservation is processed by a subsequent worker; inspect failed jobs and private disk usage after an outage. Keep workers running to resolve these reservations.
+
+The player defaults to the optimized copy once published. **Optimized / Original** buttons preserve playback position, speed, volume and pause state while changing the private source; a short buffering pause is expected. Until then it plays the original. Both variants use the same authenticated stream route, policy and range implementation (`?quality=optimized` or `?quality=original`); unknown variants are rejected and unpublished variants cannot be streamed. An incompatible original may still fail when explicitly selected. Permanent operator purge removes both copies; soft deletion hides both immediately.
 
 `VideoPolicy` is the authorization boundary. Administrators see all non-deleted videos. Family members see only ready videos explicitly marked “Available to family members” in Filament. New videos are private to administrators until that toggle is enabled. The gallery query uses the same visibility rules. Every original and thumbnail request rechecks authorization. Originals and thumbnails are outside public/; no storage:link or public media URLs exist. Local avatars and fonts avoid external requests for personal display data.
 
@@ -128,6 +148,6 @@ For MariaDB, create a dedicated test DB and run with environment overrides, e.g.
 
 ## Known limitations
 
-Hostpoint CPU quotas, actual web-server timeout behavior, CLI extension availability, Composer usability and server streaming delegation remain staging checks. A real 4–8 GiB upload has not been tested on hosting. The sparse-file test verifies integer/range handling, not transfer throughput. There is no whole-file digest, transcoding, antivirus scanning, invitation/reset-email workflow, groups, albums or external provider. Metadata inspection is not a sandbox for untrusted codec parsers: keep FFmpeg patched and restrict upload access. One active remembered upload per browser/account; multiple tabs are protected by offset checks and locks but may require manual resume. No browser background-upload guarantee. Database/filesystem crashes cannot be made one atomic operation: originals are retained for recovery, and DB plus media need coordinated backups.
+Hostpoint CPU quotas, actual web-server timeout behavior, CLI extension availability, Composer usability and server streaming delegation remain staging checks. A real 4–8 GiB upload has not been tested on hosting. The sparse-file test verifies integer/range handling, not transfer throughput. There is no whole-file digest, HLS/adaptive transcoding, antivirus scanning, invitation/reset-email workflow, groups, albums or external provider. Metadata inspection is not a sandbox for untrusted codec parsers: keep FFmpeg patched and restrict upload access. One active remembered upload per browser/account; multiple tabs are protected by offset checks and locks but may require manual resume. No browser background-upload guarantee. Database/filesystem crashes cannot be made one atomic operation: originals are retained for recovery, and DB plus media need coordinated backups.
 
 See [Hostpoint staging deployment](docs/hostpoint-deployment.md) before exposing an instance.

@@ -14,8 +14,8 @@
         <div><h1>{{ $video->title }}</h1><x-video.metadata :video="$video" :duration="true" /></div>
         <span class="hr-private-label"><x-ui.icon name="lock" /> Private video</span>
     </div>
-    @if($video->status === \App\Enums\VideoStatus::Ready && !$video->browser_compatible)
-        <p class="hr-notice"><x-ui.icon name="warning" /> This original may not play in every browser. MP4 with H.264 video and AAC audio is recommended; no playback conversion has been made.</p>
+    @if($video->status === \App\Enums\VideoStatus::Ready && !$video->browser_compatible && !$video->hasOptimizedCopy())
+        <p class="hr-notice"><x-ui.icon name="warning" /> This original may not play in every browser. An optimized MP4 can improve compatibility. Ask your family administrator to prepare a copy.</p>
     @endif
     @if($video->description)<div class="video-description"><p>{{ $video->description }}</p></div>@endif
 </x-layout>

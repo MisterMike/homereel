@@ -62,6 +62,25 @@ class PlaybackTest extends TestCase
         $this->get($this->url)->assertNotFound();
     }
 
+    public function test_optimized_streams_use_the_same_authorization_and_range_handling(): void
+    {
+        Storage::disk('videos')->put('optimized/test.mp4', 'OPTIMIZED');
+        $this->video->update(['optimization_status' => 'ready', 'optimized_path' => 'optimized/test.mp4']);
+        $this->assertSame('OPTIMIZED', $this->get($this->url)->assertOk()->assertHeader('Content-Type', 'video/mp4')->streamedContent());
+        $this->assertSame('0123456789', $this->get($this->url.'?quality=original')->assertOk()->streamedContent());
+        $this->assertSame('TIM', $this->withHeader('Range', 'bytes=2-4')->get($this->url.'?quality=optimized')->assertStatus(206)->assertHeader('Content-Range', 'bytes 2-4/9')->streamedContent());
+        $this->head($this->url.'?quality=optimized')->assertOk()->assertHeader('Content-Length', '9');
+        $this->video->update(['prototype_available' => false]);
+        $this->get($this->url.'?quality=optimized')->assertForbidden();
+    }
+
+    public function test_unpublished_and_unknown_variants_cannot_be_requested(): void
+    {
+        $this->get($this->url.'?quality=optimized')->assertNotFound();
+        $this->get($this->url.'?quality=../../original')->assertUnprocessable();
+        $this->get($this->url.'?quality[]=original')->assertUnprocessable();
+    }
+
     public function test_sparse_five_gib_file_seeks_without_loading_original_into_memory(): void
     {
         $size = 5 * 1073741824;
@@ -74,6 +93,6 @@ class PlaybackTest extends TestCase
         $before = memory_get_usage(true);
         $response = $this->withHeader('Range', 'bytes='.($size - 4).'-')->get($this->url)->assertStatus(206)->assertHeader('Content-Length', '4')->assertHeader('Content-Range', 'bytes '.($size - 4).'-'.($size - 1).'/'.$size);
         $this->assertSame('TAIL', $response->streamedContent());
-        $this->assertLessThan(8 * 1048576,memory_get_usage(true) - $before);
+        $this->assertLessThan(8 * 1048576, memory_get_usage(true) - $before);
     }
 }

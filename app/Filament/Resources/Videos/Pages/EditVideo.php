@@ -6,6 +6,7 @@ use App\Enums\VideoStatus;
 use App\Filament\Resources\Videos\VideoResource;
 use App\Jobs\GenerateVideoThumbnail;
 use App\Jobs\ProcessVideo;
+use App\Services\Video\VideoOptimization;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Notifications\Notification;
@@ -48,6 +49,15 @@ class EditVideo extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
+            Action::make('optimize')->label(fn (): string => $this->record->optimization_status === 'failed' ? 'Retry MP4 optimization' : 'Create optimized MP4')->icon('heroicon-o-film')
+                ->visible(fn (): bool => config('video.optimization_enabled') && ! $this->record->hasOptimizedCopy())
+                ->disabled(fn (): bool => $this->record->status !== VideoStatus::Ready || in_array($this->record->optimization_status, ['queued', 'processing'], true))
+                ->requiresConfirmation()->modalDescription('Create a private H.264/AAC MP4 up to 720p. The original stays intact and playable. Conversion may take several minutes.')
+                ->action(function (): void {
+                    Gate::authorize('update', $this->record);
+                    app(VideoOptimization::class)->queue($this->record);
+                    Notification::make()->title('MP4 optimization queued')->body('Refresh this page later to check its status.')->success()->send();
+                }),
             Action::make('regenerateThumbnail')->label('Generate thumbnail')->icon('heroicon-o-photo')
                 ->disabled(fn (): bool => ! config('video.thumbnails') || $this->record->status !== VideoStatus::Ready)
                 ->action(function (): void {

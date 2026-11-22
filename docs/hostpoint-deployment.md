@@ -15,7 +15,7 @@ Ask Hostpoint about cron minimum interval, process/job duration limits, concurre
 1. Create a MariaDB database and a dedicated application user. Use Hostpoint's assigned hostname and credentials; choose utf8mb4 and verify InnoDB transactions. Do not reuse unrelated applications' DBs. Back up before migrations.
 2. Put the Laravel release outside public web folders, for example an account-private releases directory. Keep shared `.env`, storage/framework, storage/logs and the videos root stable across releases. Use only paths actually available to your account; examples here are placeholders.
 3. In Hostpoint's subdomain settings set its document root to the selected release's **public/** directory. Verify it really points there; never make the repository root public. If the control panel cannot target it, resolve that with Hostpoint before proceeding. Do not copy index.php upward or expose application files behind only .htaccess protection.
-4. Set VIDEO_STORAGE_ROOT to an absolute directory **outside every public document root**, ideally shared across releases and on the same filesystem for uploads and originals. It holds uploads/, originals/, thumbnails/ and locks/. Do not run storage:link. Test that no URL maps to any of these paths.
+4. Set VIDEO_STORAGE_ROOT to an absolute directory **outside every public document root**, ideally shared across releases and on the same filesystem for uploads and originals. It holds uploads/, originals/, optimized/, thumbnails/ and locks/. Do not run storage:link. Test that no URL maps to any of these paths.
 5. Make storage/ and bootstrap/cache/ writable by the actual PHP/CLI account. Use owner-only 0700 directories and 0600 files for private media and .env where the hosting execution identity allows it; otherwise use narrowly scoped account-group permissions after checking FPM identity. Do not use 0777. Only public assets need web-readable permissions. Never change ownership or permissions recursively across the whole hosting account.
 6. Build assets locally or in CI with `npm ci && npm run build`, then ship public/build including manifest.json. Node is not needed on Hostpoint at runtime. Include self-hosted fonts and the local avatar.
 7. Install locked production PHP dependencies with the appropriate CLI binary: `composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction`. Run `composer check-platform-reqs --no-dev`. Do not run composer update on hosting. If Composer cannot run there, build vendor in a PHP 8.3-compatible environment and validate platform requirements on the target.
@@ -53,6 +53,9 @@ FFPROBE_PATH=/verified/path/to/ffprobe
 FFMPEG_PATH=/verified/path/to/ffmpeg
 VIDEO_THUMBNAILS=false
 VIDEO_PROCESS_TIMEOUT=60
+VIDEO_OPTIMIZATION_ENABLED=false
+VIDEO_OPTIMIZATION_AUTO=false
+VIDEO_OPTIMIZATION_TIMEOUT=3600
 ```
 
 Leave DB_QUEUE_CONNECTION unset so queue insertion shares the application transaction. Replace all placeholders. The default 400 GiB logical allowance leaves nominal headroom within the stated 500 GB hosting allowance, but other account data and backups also consume space; lower it accordingly. Never use the 4G upload_max_filesize as an excuse to send a full file. post_max_size=64M still caps request bodies; use 8 MiB chunks. If the available upload bandwidth or server buffering makes a chunk request take too long, reduce VIDEO_CHUNK_BYTES before creating new sessions (existing sessions retain their negotiated chunk size). Browser hashing only handles one chunk at a time.
@@ -82,6 +85,20 @@ Use two cron entries with absolute paths. Adapt paths and frequency to Hostpoint
 --max-time=50 controls whether another job starts; it **does not stop a running job at 50 seconds**. Each ProcessVideo may run two 60-second processes plus overhead; the job/worker timeout is 150 seconds and retry_after is 300. A cron invocation can therefore exceed one minute. With thumbnails disabled it runs only the probe. If Hostpoint's process allowance is shorter, reduce VIDEO_PROCESS_TIMEOUT and align the job timeout (2 × process timeout + 30), worker timeout and retry_after, or disable queued processing until an approved alternative is available. A too-short timeout safely retains the original but may leave processing incomplete. A killed job is retried after its queue reservation expires; failed jobs are visible with `php artisan queue:failed` and can be retried with `php artisan queue:retry ID` after fixing the cause. The Filament edit page also offers Retry inspection for failed videos.
 
 Do not configure sync queues or after-response processing for video inspection. Do not schedule videos:purge until backup and retention rules are agreed. Explicit purge is irreversible: `php artisan videos:purge --days=30 --force`.
+
+## Optional MP4 conversion: hosting approval required
+
+Keep `VIDEO_OPTIMIZATION_ENABLED=false` until Hostpoint confirms sustained FFmpeg CPU use and long CLI jobs are permitted. Thumbnail permission alone does not establish permission for full-video encoding. A short cron worker cannot divide a conversion into short requests. The default FFmpeg process timeout is 3600 seconds; this may be unsuitable for Smart shared hosting. Test a representative clip with the host's approval first. The safe fallback is original playback with conversion disabled, or a future external conversion service.
+
+If approved, enable optimization, optionally enable automatic conversion after inspection, and add a separate worker under its own non-overlap lock:
+
+```cron
+* * * * * cd /absolute/current-release && /usr/bin/flock -n /absolute/private/homereel-transcoding.lock /absolute/php artisan queue:work transcoding --queue=transcoding --stop-when-empty --max-time=50 --tries=1 --timeout=3690 >> /absolute/private/transcoding.log 2>&1
+```
+
+The dedicated `transcoding` connection uses the same database/table but a reservation timeout of `VIDEO_OPTIMIZATION_TIMEOUT + 180`, greater than the job timeout of `VIDEO_OPTIMIZATION_TIMEOUT + 90`. Adjust the worker timeout if changing this setting. Never run this queue through the ordinary `database` connection with its short retry_after. `--max-time=50` does not interrupt encoding. Enforce job timeouts with CLI pcntl/posix, monitor failures, rotate private logs, and allow space for the original plus its output reservation. The original remains available during and after failed conversion; only verified copies appear in the player. After a killed worker or host restart, a later worker must process expired reservations to release space and remove incomplete output. Do not manually delete active conversion files.
+
+Before wider staging use, test conversion failure, storage exhaustion, optimized/original seeking and permission checks for both variants. Verify backups include `optimized/` and database metadata. Existing originals remain the authoritative copies.
 
 ## Release and rollback
 

@@ -65,3 +65,11 @@
     .video-stage.has-playback-error .video-player { display: none; }
     .video-processing { min-height: 280px; }
 }
+
+.video-quality { display: flex; align-items: center; flex-wrap: wrap; gap: 12px 24px; padding-block: 16px; }
+.video-quality-options { display: flex; flex-wrap: wrap; gap: 4px; padding: 4px; border-radius: var(--hr-radius); background: var(--hr-nav); }
+.video-quality-options button { min-height: 44px; padding: 10px 16px; border-radius: 8px; color: var(--hr-secondary); cursor: pointer; }
+.video-quality-options button:hover { background: var(--hr-hover); color: var(--hr-text); }
+.video-quality-options button[aria-pressed="true"] { background: var(--hr-accent); color: var(--hr-on-accent); }
+.video-quality-options button span { margin-inline-start: 4px; font-size: 14px; font-variant-numeric: tabular-nums; }
+.video-quality > p { max-width: 54ch; margin: 0; color: var(--hr-secondary); font-size: 14px; }

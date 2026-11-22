@@ -32,6 +32,11 @@ class VideoResource extends Resource
             TextInput::make('title')->required()->maxLength(255),
             Textarea::make('description')->maxLength(10000)->columnSpanFull(),
             Toggle::make('prototype_available')->label('Available to family members')->helperText('Members can watch this video once processing finishes.'),
+            Section::make('Optimized playback')->columnSpanFull()->schema([
+                TextEntry::make('optimization_status')->label('MP4 copy')->formatStateUsing(fn (?string $state): string => ucfirst(str_replace('_', ' ', $state ?? 'not_requested'))),
+                TextEntry::make('optimized_file_size')->label('Optimized size')->formatStateUsing(fn ($state): string => number_format($state / 1048576, 1).' MiB')->placeholder('No copy yet'),
+                TextEntry::make('optimization_error')->label('Optimization')->color('danger')->visible(fn (?Video $record): bool => filled($record?->optimization_error)),
+            ])->description('A separate H.264/AAC MP4 up to 720p. The player offers Optimized and Original once it is ready.'),
             Section::make('Preview thumbnail')->columnSpanFull()->schema([
                 ImageEntry::make('thumbnail_preview')->label('Current preview')
                     ->state(fn (?Video $record): ?string => $record?->thumbnail_path ? route('videos.thumbnail', $record) : null)
@@ -54,6 +59,7 @@ class VideoResource extends Resource
         return $table->columns([
             TextColumn::make('title')->searchable(), TextColumn::make('created_at')->label('Uploaded')->dateTime()->sortable(),
             TextColumn::make('file_size')->label('Size')->formatStateUsing(fn ($state) => number_format($state / 1048576, 1).' MiB'),
+            TextColumn::make('optimization_status')->label('MP4 copy')->badge(),
             TextColumn::make('duration_label')->label('Duration'), TextColumn::make('status')->badge(),
             TextColumn::make('browser_compatible')->label('MP4 playback')->formatStateUsing(fn ($state) => $state ? 'Compatible' : 'Check format'),
         ])->defaultSort('created_at', 'desc')->recordActions([

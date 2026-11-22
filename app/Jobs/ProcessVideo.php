@@ -6,6 +6,7 @@ use App\Enums\VideoStatus;
 use App\Models\Video;
 use App\Services\Video\MediaLock;
 use App\Services\Video\VideoInspector;
+use App\Services\Video\VideoOptimization;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Log;
@@ -67,6 +68,13 @@ class ProcessVideo implements ShouldQueue
                 throw $e;
             }
         });
+        if (config('video.optimization_enabled') && config('video.optimization_auto')) {
+            try {
+                app(VideoOptimization::class)->queue($video);
+            } catch (\Throwable $exception) {
+                Log::warning('Automatic optimization could not be queued', ['video' => $video->id, 'exception' => $exception]);
+            }
+        }
     }
 
     public function failed(?\Throwable $e): void

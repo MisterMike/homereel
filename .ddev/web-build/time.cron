@@ -5,3 +5,7 @@
 # Drain queued video jobs with a short-lived worker. A running job may exceed
 # one minute, so flock prevents the next cron invocation from overlapping it.
 * * * * * cd /var/www/html && IS_DDEV_PROJECT=true /usr/bin/flock -n /tmp/homereel-worker.lock /usr/bin/php artisan queue:work database --stop-when-empty --max-time=50 --tries=3 --timeout=150 >> /var/www/html/storage/logs/queue.log 2>&1
+
+# Encoding has its own connection with a reservation timeout longer than the job.
+# max-time stops between jobs; an individual conversion may run for up to one hour.
+* * * * * cd /var/www/html && IS_DDEV_PROJECT=true /usr/bin/flock -n /tmp/homereel-transcoding.lock /usr/bin/php artisan queue:work transcoding --queue=transcoding --stop-when-empty --max-time=50 --tries=1 --timeout=3690 >> /var/www/html/storage/logs/transcoding.log 2>&1

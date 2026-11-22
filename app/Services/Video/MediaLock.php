@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Storage;
 
 class MediaLock
 {
-    public function run(string $key, callable $callback): mixed
+    public function run(string $key, callable $callback, bool $wait = false): mixed
     {
         $disk = Storage::disk(config('video.disk'));
         $disk->makeDirectory('locks');
@@ -15,7 +15,7 @@ class MediaLock
             throw new \RuntimeException('Cannot open media lock.');
         }
         try {
-            abort_unless(flock($handle, LOCK_EX | LOCK_NB), 409, 'This media is busy. Retry shortly.');
+            abort_unless(flock($handle, LOCK_EX | ($wait ? 0 : LOCK_NB)), 409, 'This media is busy. Retry shortly.');
 
             return $callback();
         } finally {

@@ -21,7 +21,7 @@ class LocalUploads implements ResumableUploads
     {
         return $this->lock->run('quota', function () use ($user, $data) {
             // Include expired-but-not-cleaned reservations and soft-deleted originals.
-            $used = (int) Video::withTrashed()->sum('file_size') + (int) UploadSession::where('status', UploadStatus::Active)->sum('expected_size');
+            $used = app(VideoStorageBudget::class)->used();
             abort_if($used + $data['size'] > config('video.storage_limit_bytes'), 422, 'Video storage allowance reached.');
             $id = (string) Str::uuid();
 
