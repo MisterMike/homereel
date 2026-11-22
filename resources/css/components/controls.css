@@ -1,0 +1,89 @@
+.hr-icon {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    vertical-align: middle;
+}
+:where(.home-app, .upload-panel) ::selection {
+    background: var(--hr-accent);
+    color: var(--hr-on-accent);
+}
+:where(.home-app, .upload-panel) :focus-visible {
+    outline: 2px solid var(--hr-accent);
+    outline-offset: 5px;
+}
+:where(.home-app, .upload-panel) [x-cloak] { display: none !important; }
+:where(.home-app, .upload-panel) .hr-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    min-height: 46px;
+    padding: 11px 20px;
+    border: 1px solid transparent;
+    border-radius: var(--hr-radius);
+    background: var(--hr-accent);
+    color: var(--hr-on-accent);
+    font: 700 15px/1.5 var(--hr-font);
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 160ms var(--hr-ease), border-color 160ms var(--hr-ease);
+}
+:where(.home-app, .upload-panel) .hr-button:hover:not(:disabled) { background: var(--hr-accent-hover); }
+:where(.home-app, .upload-panel) .hr-button-secondary {
+    background: transparent;
+    border-color: var(--hr-input-line);
+    color: var(--hr-text);
+}
+:where(.home-app, .upload-panel) .hr-button-secondary:hover:not(:disabled) {
+    background: var(--hr-hover);
+    border-color: var(--hr-secondary);
+}
+:where(.home-app, .upload-panel) .hr-button:disabled {
+    opacity: .5;
+    cursor: default;
+}
+:where(.home-app, .upload-panel) .hr-text-button {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 8px 0;
+    border: 0;
+    background: transparent;
+    color: var(--hr-secondary);
+    font: 500 14px/1.6 var(--hr-font);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    cursor: pointer;
+}
+:where(.home-app, .upload-panel) .hr-text-button:hover { color: var(--hr-text); }
+:where(.home-app, .upload-panel) .hr-text-button:disabled { opacity: .5; cursor: default; }
+:where(.home-app, .upload-panel) .hr-input {
+    display: block;
+    width: 100%;
+    min-height: 50px;
+    padding: 12px 15px;
+    border: 1px solid var(--hr-input-line);
+    border-radius: var(--hr-radius);
+    background: var(--hr-surface);
+    color: var(--hr-text);
+    caret-color: var(--hr-accent);
+    font: 400 16px/1.5 var(--hr-font);
+}
+:where(.home-app, .upload-panel) .hr-input:disabled { color: var(--hr-secondary); }
+:where(.home-app, .upload-panel) .hr-input[aria-invalid=true] { border-color: var(--hr-danger); }
+:where(.home-app, .upload-panel) .hr-form-error {
+    color: var(--hr-danger);
+    font-size: 15px;
+    line-height: 1.7;
+}
+@media (prefers-reduced-motion: reduce) {
+    :where(.home-app, .upload-panel) *,
+    :where(.home-app, .upload-panel) *::before,
+    :where(.home-app, .upload-panel) *::after {
+        animation: none !important;
+        transition: none !important;
+        scroll-behavior: auto !important;
+    }
+}

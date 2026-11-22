@@ -4,7 +4,7 @@ Private, self-hosted family videos. Milestone 1 implements administrator uploads
 
 ## Stack
 
-PHP 8.3+ (64-bit), Laravel 13, Filament 5 / Livewire, Blade, Alpine ES modules, Tailwind CSS 4, Vite, MariaDB in production, Laravel database queues, FFmpeg / FFprobe. Composer locks are resolved against PHP 8.3.37; both dependency lockfiles are committed. SQLite is convenient locally; MariaDB is supported and tested. No Redis, Docker or permanent worker is required. Existing DDEV configuration is optional.
+PHP 8.3+ (64-bit), Laravel 13, Filament 5 / Livewire, Blade, Alpine ES modules, Tailwind CSS 4, Vite, MariaDB in production, Laravel database queues, FFmpeg / FFprobe. Composer locks are resolved against PHP 8.3.37; both dependency lockfiles are committed. DDEV uses MariaDB to match production; SQLite remains available for installations without DDEV and isolated tests. No Redis, Docker or permanent worker is required. Existing DDEV configuration is optional.
 
 ## Local installation
 
@@ -37,11 +37,10 @@ The second command exits after draining the queue. For active local development,
 ### Optional existing DDEV setup
 
 ```sh
+cp .env.example .env
 ddev start
 ddev composer install
-cp .env.example .env
 ddev artisan key:generate
-touch database/database.sqlite
 ddev artisan migrate
 ddev artisan filament:assets
 npm ci
@@ -50,7 +49,7 @@ ddev artisan app:create-admin
 ddev artisan queue:work database --stop-when-empty --max-time=50 --tries=3 --timeout=150
 ```
 
-Visit https://homereel.ddev.site. FFmpeg is included through webimage_extra_packages on a fresh DDEV build. An existing container may require `ddev restart`. DDEV serves PHP directly; `artisan serve` is unnecessary. For Vite live reload on DDEV, expose the Vite port and configure its HTTPS origin as appropriate, or use `npm run build`.
+Visit https://homereel.ddev.site. DDEV configures the local MariaDB database (`db`) in `.env` on startup. Copy `.env.example` before `ddev start`, as shown above; do not switch an existing library between SQLite and MariaDB without migrating its data. FFmpeg is included through webimage_extra_packages on a fresh DDEV build. An existing container may require `ddev restart`. DDEV serves PHP directly; `artisan serve` is unnecessary. For Vite live reload on DDEV, expose the Vite port and configure its HTTPS origin as appropriate, or use `npm run build`.
 
 ## Configuration
 
@@ -101,7 +100,7 @@ Cleanup removes expired temporary files and marks sessions expired, under the sa
 
 ## Processing and playback
 
-The database queue runs FFprobe with argument arrays to extract duration, resolution, codecs and container. Processes permit only the local file protocol, no network fetching. FFmpeg thumbnails use one thread, one frame and a 640px target width when enabled. Probe failures retain the original, mark failed and retry up to three times. Thumbnail failure is logged but does not prevent playback. Failed videos can be retried from their Filament edit page. This is inspection only: there is no transcoding or optimized playback copy.
+The database queue runs FFprobe with argument arrays to extract duration, resolution, codecs and container. Processes permit only the local file protocol, no network fetching. FFmpeg thumbnails use one thread, one frame and a 640px target width when enabled. Probe failures retain the original, mark failed and retry up to three times. Thumbnail failure is logged but does not prevent playback. Administrators can choose a per-video thumbnail time in seconds on the edit page, or leave it blank for automatic selection (5 seconds, or one third of a short clip). Saving a changed time or clicking Generate thumbnail queues regeneration. The current preview stays available until a new image has been generated successfully; failed attempts retain the previous preview and original. Refresh the edit page after the worker runs to see the new preview. Failed videos can be retried from their Filament edit page. This is inspection only: there is no transcoding or optimized playback copy.
 
 MP4/H.264/AAC is conservatively marked compatible; codec support can still vary by device and encoding profile. Other accepted originals show a playback warning. Non-fast-start MP4 may require extra seeks. Original and any future optimized version must remain distinct.
 

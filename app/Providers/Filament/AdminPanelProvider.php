@@ -4,10 +4,12 @@ namespace App\Providers\Filament;
 
 use App\Http\Middleware\PrivateResponse;
 use App\Services\Video\PrivateAvatar;
+use Filament\Actions\Action;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Filament\Navigation\NavigationItem;
 use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
@@ -31,6 +33,12 @@ class AdminPanelProvider extends PanelProvider
             ->login()
             ->brandName('HomeReel')
             ->defaultAvatarProvider(PrivateAvatar::class)
+            ->navigationItems([
+                NavigationItem::make('Video library')->icon('heroicon-o-arrow-top-right-on-square')->url(fn (): string => route('videos.index'))->sort(99),
+            ])
+            ->userMenuItems([
+                Action::make('videoLibrary')->label('View video library')->icon('heroicon-o-home')->url(fn (): string => route('videos.index')),
+            ])
             ->colors([
                 'primary' => Color::Teal,
             ])

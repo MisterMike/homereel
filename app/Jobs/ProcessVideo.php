@@ -9,6 +9,7 @@ use App\Services\Video\VideoInspector;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class ProcessVideo implements ShouldQueue
 {
@@ -42,15 +43,25 @@ class ProcessVideo implements ShouldQueue
             $video->update(['status' => VideoStatus::Processing, 'processing_error' => null]);
             try {
                 $video->fill($inspector->inspect($video));
+                $previousThumbnail = $video->thumbnail_path;
                 if (config('video.thumbnails')) {
                     try {
                         $video->thumbnail_path = $inspector->thumbnail($video);
+                        $video->thumbnail_error = null;
                     } catch (\Throwable $e) {
+                        $video->thumbnail_error = 'Preview generation failed. The video is still available; try generating another preview from its edit page.';
                         Log::warning('Thumbnail generation failed', ['video' => $video->id, 'exception' => $e]);
                     }
                 }
                 $video->status = VideoStatus::Ready;
                 $video->save();
+                if ($previousThumbnail && $previousThumbnail !== $video->thumbnail_path) {
+                    try {
+                        Storage::disk(config('video.disk'))->delete($previousThumbnail);
+                    } catch (\Throwable $exception) {
+                        Log::warning('Old preview cleanup failed', ['video' => $video->id, 'exception' => $exception]);
+                    }
+                }
             } catch (\Throwable $e) {
                 $video->update(['status' => VideoStatus::Failed, 'processing_error' => 'Inspection failed. The original is retained. Check the private application log and retry processing.']);
                 throw $e;

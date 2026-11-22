@@ -14,7 +14,7 @@ Administrators preserve and share private family videos. Authenticated family me
 Milestone 1 covers administrator resumable uploads, private originals, queued inspection, optional thumbnails, and authenticated seeking. No public registration, groups, albums or transcoding. Hostpoint shared hosting requires short upload requests and cron-driven workers. Never expose private media through static URLs. Deployment is documentation only.
 
 ## Brand commitments
-A neutral dark-friendly, clean viewing interface with a responsive thumbnail grid. Keep polish modest and prioritize the functioning secure flow. HomeReel is a working name inferred from the repository; no supplied logo or family footage.
+HomeReel is a warm, premium private family cinema. Follow docs/HomeReel-FRONTEND_DESIGN_BRIEF.md and its supplied mood reference: warm charcoal, restrained coral, Manrope, image-led responsive layouts, and honest navigation. Filament remains a separate administration shell. No supplied family footage; do not invent it.
 
 ## Product principles
 Protect originals; authorize every media request; allow interrupted uploads to recover; keep storage and playback replaceable.

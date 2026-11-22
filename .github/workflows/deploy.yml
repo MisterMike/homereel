@@ -1,0 +1,71 @@
+name: Deploy to Hostpoint
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          tools: composer:v2
+          coverage: none
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install PHP dependencies
+        run: composer install --no-dev --prefer-dist --no-interaction --no-progress --optimize-autoloader
+
+      - name: Install frontend dependencies and build assets
+        run: |
+          npm ci
+          npm run build
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY_SERVER }}
+
+      - name: Add server to known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          printf "%s\n" "${{ secrets.REMOTE_SERVER_FINGERPRINT }}" >> ~/.ssh/known_hosts
+
+      - name: Set deploy path
+        run: |
+          if [ "${GITHUB_REF}" = "refs/heads/main" ]; then
+            echo "DEPLOY_PATH=www/ch.marukka.video" >> $GITHUB_ENV
+          else
+            echo "DEPLOY_PATH=www/ch.marukka.videotest" >> $GITHUB_ENV
+          fi
+
+      - name: Deploy files via rsync
+        run: |
+          rsync -avzvv --delete \
+            -e "ssh -o UserKnownHostsFile=$HOME/.ssh/known_hosts -o StrictHostKeyChecking=yes" \
+            --exclude-from=deployment-exclude-list.txt \
+            ./ ehedurux@sl3111.web.hostpoint.ch:${{ env.DEPLOY_PATH }}
+
+      - name: Run Laravel deployment commands on server
+        run: |
+          ssh ehedurux@sl3111.web.hostpoint.ch "
+            set -e
+            cd '${{ env.DEPLOY_PATH }}'
+            /usr/local/php85/bin/composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction
+            /usr/local/php85/bin/php artisan migrate --force
+            /usr/local/php85/bin/php artisan optimize
+          "

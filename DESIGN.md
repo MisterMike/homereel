@@ -1,73 +1,105 @@
 ---
 name: HomeReel
-description: A quiet private screening room for family videos.
+description: A warm private family cinema, with the videos at its heart.
 colors:
-  canvas: "#101418"
-  panel: "#191e23"
-  cover: "#20282f"
-  text: "#edf2f3"
-  muted: "#acb6bf"
-  accent: "#a5dfcd"
-  accent-hover: "#bfeedd"
-  accent-ink: "#10261f"
-  border: "#30383e"
-  input-border: "#59646e"
-  control-border: "#76858e"
-  error: "#ffb4ad"
+  bg: "#111316"
+  nav: "#17191e"
+  surface: "#202329"
+  hover: "#292d34"
+  line: "#343941"
+  text: "#f5f3ef"
+  secondary: "#b1b3ba"
+  muted: "#9b9fa8"
+  accent: "#ed896d"
+  accent-hover: "#f49b82"
+  on-accent: "#211914"
+  positive: "#78be9b"
+  warning: "#e6b866"
+  danger: "#e49a9a"
+  input-line: "#707681"
 typography:
   headline:
-    fontFamily: "HomeReel Inter, sans-serif"
-    fontSize: "clamp(28px, 3vw, 42px)"
-    fontWeight: 600
-    lineHeight: 1.15
+    fontFamily: "HomeReel Manrope, sans-serif"
+    fontSize: "clamp(26px, 2.7vw, 34px)"
+    fontWeight: 700
+    lineHeight: 1.2
     letterSpacing: "-0.035em"
   title:
-    fontFamily: "HomeReel Inter, sans-serif"
-    fontSize: "17px"
-    fontWeight: 550
+    fontFamily: "HomeReel Manrope, sans-serif"
+    fontSize: "16px"
+    fontWeight: 650
+    lineHeight: 1.5
+    letterSpacing: "-0.02em"
+  body:
+    fontFamily: "HomeReel Manrope, sans-serif"
+    fontSize: "16px"
+    fontWeight: 400
+    lineHeight: 1.6
   metadata:
-    fontFamily: "HomeReel Inter, sans-serif"
-    fontSize: "13px"
-  label:
-    fontFamily: "HomeReel Inter, sans-serif"
+    fontFamily: "HomeReel Manrope, sans-serif"
     fontSize: "14px"
+    lineHeight: 1.6
+  label:
+    fontFamily: "HomeReel Manrope, sans-serif"
+    fontSize: "15px"
+    fontWeight: 600
 rounded:
-  badge: "4px"
-  input: "6px"
-  button: "7px"
-  player: "8px"
-  cover: "9px"
-  panel: "10px"
+  badge: "5px"
+  menu-item: "8px"
+  navigation: "10px"
+  control: "12px"
+  menu: "14px"
+  player: "16px"
+  feature: "18px"
 spacing:
-  small: "12px"
-  medium: "24px"
-  panel: "32px"
-  large: "36px"
+  small: "8px"
+  control: "12px"
+  medium: "16px"
+  inset: "20px"
+  gap: "24px"
+  section: "28px"
+  large: "32px"
 components:
   button-primary:
     backgroundColor: "{colors.accent}"
-    textColor: "{colors.accent-ink}"
-    rounded: "{rounded.button}"
-    padding: "12px 20px"
+    textColor: "{colors.on-accent}"
+    rounded: "{rounded.control}"
+    padding: "11px 20px"
   button-primary-hover:
     backgroundColor: "{colors.accent-hover}"
   button-secondary:
     backgroundColor: "transparent"
     textColor: "{colors.text}"
-    rounded: "{rounded.button}"
-    padding: "12px 20px"
+    rounded: "{rounded.control}"
+    padding: "11px 20px"
+  button-secondary-hover:
+    backgroundColor: "{colors.hover}"
+  button-text:
+    backgroundColor: "transparent"
+    textColor: "{colors.secondary}"
+    padding: "8px 0"
   input:
-    backgroundColor: "{colors.panel}"
+    backgroundColor: "{colors.surface}"
     textColor: "{colors.text}"
-    rounded: "{rounded.input}"
-    padding: "12px 14px"
+    rounded: "{rounded.control}"
+    padding: "12px 15px"
+  navigation-current:
+    backgroundColor: "color-mix(in srgb, #ed896d 15%, transparent)"
+    textColor: "{colors.accent}"
+    rounded: "{rounded.navigation}"
+    padding: "12px 16px"
   cover:
-    backgroundColor: "{colors.cover}"
-    rounded: "{rounded.cover}"
+    backgroundColor: "{colors.surface}"
+    rounded: "{rounded.control}"
+  status:
+    backgroundColor: "{colors.nav}"
+    textColor: "{colors.warning}"
+    rounded: "{rounded.badge}"
+    padding: "3px 8px"
   upload-panel:
-    backgroundColor: "{colors.panel}"
+    backgroundColor: "{colors.nav}"
     textColor: "{colors.text}"
-    rounded: "{rounded.panel}"
+    rounded: "{rounded.feature}"
     padding: "32px"
 ---
 
@@ -75,63 +107,81 @@ components:
 
 ## Overview
 
-**Creative North Star: "A quiet private screening room"**
+**Creative North Star: "Your private family cinema"**
 
-Dark slate surfaces, generous video imagery and mint controls keep the family collection central. The implementation is deliberately modest: a restrained wordmark, small metadata and direct, familiar controls.
+Warm charcoal, softly warm text and a restrained coral accent make HomeReel personal, peaceful and cinematic. Video imagery provides the atmosphere; the surrounding interface stays quiet, legible and comfortable for family members on phones, tablets and desktops. This system records the implementation of the user’s frontend design brief and supplied mood reference.
 
-The source of these tokens is `resources/css/components/library.css`, used by the Blade viewing interface and the custom upload panel. The administration shell retains Filament's existing components and configured Teal primary palette; extend that shell with its native conventions rather than restyling it to imitate the viewing interface.
+The custom Blade viewing and login surfaces share reusable navigation, video and UI components. The custom upload panel shares their tokens and controls inside a separate native Filament administration shell. Source authority is `resources/css/components/tokens.css`, followed by the controls, shell, library, login and upload stylesheets; `resources/js/app.js` is the central Alpine entrypoint.
 
 **Key Characteristics:**
-- Dark surfaces with clear, quiet separation.
-- Image-led browsing and compact metadata.
-- Visible keyboard focus and honest operational feedback.
+- Warm dark surfaces and restrained coral actions.
+- Image-led browsing with clear, compact metadata.
+- Responsive composition, visible focus and honest media states.
+- Separate native administration shell with a scoped upload surface.
 
 ## Colors
 
 ### Primary
-Mint accent identifies primary actions, the brand mark, progress, selection and keyboard focus. Its lighter hover tone keeps interaction understated; dark accent ink makes button labels legible.
+Coral accent identifies primary actions, active navigation, selection, progress and keyboard focus. Accent hover adds gentle warmth on interaction. On-accent supplies dark, readable labels on filled controls.
 
 ### Neutral
-Canvas, panel and cover provide progressively lighter slate surfaces. Text and muted text distinguish content from metadata; border, input-border and control-border distinguish separators from interactive outlines. Error is reserved for failure feedback. Upload explanatory copy uses the local lighter slate value in its stylesheet.
+Background is the main charcoal canvas; navigation is a slightly raised stable shell. Surface supports inputs, menus and missing previews; hover supplies quiet interaction contrast. Line separates regions sparingly. Warm text carries headings and labels, secondary carries dates and supporting copy, and muted is reserved for quieter footer and privacy copy. Input-line makes interactive outlines visible.
 
-**The Focus Rule.** Interactive controls in the custom interface retain a visible mint outline with an offset.
+Positive, warning and danger are semantic feedback tokens, not extra brand accents. Warning accompanies processing and playback notices; danger accompanies errors and failed states. Positive is available in the token set without requiring a success decoration on every screen.
+
+**The Focus Rule.** Custom interactive controls retain a two-pixel coral keyboard outline with a five-pixel offset; the file chooser also exposes focus within its container.
 
 ## Typography
 
-Self-hosted HomeReel Inter is the custom interface's single variable family with a sans-serif fallback. Page headlines use the recorded headline role; card titles and metadata use the smaller roles. Body text inherits the Tailwind base size; descriptive paragraphs use relaxed line-height. Do not introduce a separate display face.
+Locally hosted variable HomeReel Manrope is the single custom-interface family, with a sans-serif fallback and weights 200–800 available. The frontmatter records the reused headline, title, body, metadata and label roles. Card titles increase to 18px on phones; they clamp to two lines and wrap long words.
 
-Login introduces the service with a larger headline (`clamp(36px, 4.6vw, 64px)`, line-height `1.1`), reduced to `39px` on phones. This is a login-specific composition, not a new global type scale. Filament's shell keeps its own typography.
+Feature titles use `clamp(24px, 2.6vw, 34px)` at weight 750 and line-height 1.18. The login introduction uses `clamp(34px, 3.5vw, 48px)`, falling to 32px on phones; its form heading is 28px, falling to 25px. These are surface-specific expressions, not a second typeface. Descriptions use relaxed line-height and are limited to 74ch on the detail page. Duration and progress numbers use tabular numerals.
+
+**The One Family Rule.** Extend the custom interface with the locally hosted Manrope family; preserve Filament’s native typography in its surrounding administration shell.
 
 ## Layout
 
-The viewing shell is centered at `min(1440px, 92vw)`, with a `90vw` phone width. Desktop vertical padding is `56px` above and `72px` below; phone padding is `32px` and `48px`. The image grid has three columns, two at `950px` and below, and one at `600px` and below. Desktop gaps are `36px` vertically and `24px` horizontally; phones use `28px`.
+A sticky header is 76px high, becoming 68px below 768px. At 1280px and above, authenticated pages gain a fixed 224px sidebar and matching content offset. Below that width, the Library link moves into the header; administrator upload actions remain available in the page and account menu. The main area is flexible, centered and capped at 1504px including padding, with 32px horizontal insets. Phone insets become 20px, or 16px at 380px and below; footer spacing accommodates the bottom safe area.
 
-At the phone breakpoint the heading and login columns stack, navigation wraps and the footer wraps. Upload content stays within `760px`, with panel padding reduced from `32px` to `22px` on phones. Long titles and filenames wrap. Description text is limited to `75ch`.
+The library grid uses one column by default, two from 768px, three from 1024px and four from 1280px, with 24px horizontal and 32px vertical gaps. A featured authorized ready video with a thumbnail can occupy a 308px minimum-height frame, becoming 240px on phones. Its gradient protects text contrast. It is conditional, not a required empty decoration.
+
+Login has two columns within an 1184px main area and a 420px form, stacking below 768px. The upload panel caps at 840px with 32px padding, reduced to 22px on phones. Progress, filenames, descriptions and account identity wrap without horizontal overflow.
+
+**The Real Navigation Rule.** Compose navigation from working routes and authorized actions only; keep administrator controls out of viewer surfaces.
 
 ## Elevation & Depth
 
-The custom interface uses tonal layering and thin separators without box shadows. Video imagery supplies depth. Card image hover scales gently (`1.025` over `0.2s`); buttons transition background over `0.18s`. Reduced-motion preference disables these transitions. Filament retains its native elevation behavior.
+Most surfaces use tonal separation and fine borders. Cards have no outer box or shadow; actual imagery supplies depth. The account menu alone uses the shared observed floating shadow (`0 16px 40px #0005`). Feature gradients are local legibility devices, not a general glass or glow treatment. Filament retains native elevation outside the custom upload panel.
+
+**The Quiet Motion Rule.** Use the shared easing `cubic-bezier(.16, 1, .3, 1)` with 160ms control and play-hint transitions and 180ms thumbnail transitions. Thumbnails scale to 1.025 and dim to 0.9 brightness on hover or keyboard focus. Disable animations and transitions for reduced motion; loading pulse is feedback rather than decoration.
 
 ## Shapes
 
-Small rounded controls, modestly rounded video frames and a slightly softer upload panel follow the recorded radius roles. Video covers retain a `16:9` ratio; the player uses the same ratio and a maximum height of `75vh`. The duration badge overlays the lower right of a cover with a translucent canvas background.
+**The Frame Rule.** Preserve 16:9 thumbnail and player geometry, with images covering thumbnails and video contained in its stage. Covers, buttons and inputs share the control radius; larger feature frames and upload panels use the feature radius. Phone feature and upload corners reduce to 14px, and player corners to 10px. The player’s desktop radius is 16px and its height caps at 76svh.
+
+Badges use small corners, menus and navigation use modest soft corners, and account avatars are circular. Thin-line inline SVG icons are normally 20px, with smaller metadata icons and larger empty-state symbols. Do not turn every text region into a bordered card.
 
 ## Components
 
-- **Buttons:** mint primary, outlined secondary and unboxed text actions. Disabled controls reduce opacity and lose the pointer cursor. Secondary buttons currently inherit the shared mint hover background; preserve this observed behavior unless deliberately revising the component.
-- **Inputs:** slate fill, visible neutral outline and mint keyboard focus. Labels remain above fields; errors use text with alert semantics.
-- **Video cards:** the linked image, title and date form one unit. Use real authorized thumbnails or the plain status placeholder already provided by the application.
-- **Navigation:** compact text links with underlined hover, a small outlined play mark and a simple wordmark. Preserve the wrapping phone layout.
-- **Upload panel:** a dark contained workspace with a dashed file chooser, native progress element, tabular numeric progress and live status feedback. Confirmed progress comes from the server.
-- **Player:** native video controls on a black frame; descriptive content follows below.
+- **Buttons:** coral primary, outlined secondary and underlined text variants. Primary and secondary controls have a minimum height of 46px; text actions have 44px targets. Secondary hover uses the hover surface and a lighter outline. Disabled buttons halve opacity and lose the pointer cursor.
+- **Inputs:** surface fill, input-line border, shared corners and a minimum height of 50px. Persistent labels remain above fields; invalid borders and error copy use danger. Preserve native file selection.
+- **Navigation:** reusable Blade header and sidebar, with coral tinted current links, quiet neutral defaults and hover surfaces. The account disclosure supports outside dismissal and Escape with focus returned to its trigger. Keep the skip link and semantic current-page indication.
+- **Video cards:** one linked thumbnail, title and metadata unit. Duration sits at the lower right; non-ready status sits at the upper left with a text label. Missing or failed images retain an honest film-icon placeholder. The hover play hint appears only over a successfully loaded preview, never over the placeholder.
+- **Feature:** an authorized ready item, local image gradient, clamped title, available metadata and a working watch action. Supporting description hides on phones.
+- **Player:** native HTML5 controls, authenticated stream and authorized poster. Loading, processing and playback failure retain readable feedback and an actual retry action; do not replace native controls with a decorative player.
+- **Upload:** scoped panel, dashed select zone, file summary, title, native progress, pause/resume and error feedback. Progress reflects confirmed server bytes. The dedicated `resources/css/upload.css` imports tokens, controls and upload styles without the application’s Tailwind preflight or viewing shell. Extend the surrounding Filament UI with native Filament components; do not load global app CSS there.
+- **Empty state:** one quiet outlined film symbol, concise heading and explanation, with upload action only for administrators. No fabricated footage or collection items.
 
 ## Do's and Don'ts
 
 ### Do:
-- **Do** reuse the custom controls and spacing roles on new viewing surfaces.
-- **Do** use Filament components and its configured Teal palette for administration shell extensions.
-- **Do** preserve visible focus, reduced motion, live feedback and native playback controls.
+- **Do** reuse the Blade navigation, video and UI components and shared CSS tokens.
+- **Do** preserve visible keyboard focus, reduced motion, readable status text and native playback controls.
+- **Do** use authorized real media and honest loading, missing, processing and failure states.
+- **Do** keep upload styling scoped and extend the surrounding administration shell with native Filament components.
 
 ### Don't:
-- **Don't** invent family imagery or replace the honest empty state with decorative footage.
-- **Don't** add decorative effects or elaborate branding that exceeds the modest polish brief.
+- **Don't** invent family imagery, public-sharing controls, albums, people, filters or search without working support.
+- **Don't** expose private originals or thumbnails through static public URLs.
+- **Don't** replace quiet charcoal and coral with the obsolete mint palette or the old Inter typography.
+- **Don't** add global app CSS or Tailwind preflight to the native Filament shell.

@@ -1,0 +1,7 @@
+# HomeReel local background tasks. Keep this file when updating the cron add-on.
+# Run Laravel's scheduler every minute; expired uploads are cleaned hourly.
+* * * * * cd /var/www/html && IS_DDEV_PROJECT=true /usr/bin/flock -n /tmp/homereel-scheduler.lock /usr/bin/php artisan schedule:run >> /var/www/html/storage/logs/scheduler.log 2>&1
+
+# Drain queued video jobs with a short-lived worker. A running job may exceed
+# one minute, so flock prevents the next cron invocation from overlapping it.
+* * * * * cd /var/www/html && IS_DDEV_PROJECT=true /usr/bin/flock -n /tmp/homereel-worker.lock /usr/bin/php artisan queue:work database --stop-when-empty --max-time=50 --tries=3 --timeout=150 >> /var/www/html/storage/logs/queue.log 2>&1

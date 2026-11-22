@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Videos;
 
+use App\Enums\VideoStatus;
 use App\Filament\Resources\Videos\Pages\EditVideo;
 use App\Filament\Resources\Videos\Pages\ListVideos;
 use App\Models\Video;
@@ -11,7 +12,10 @@ use Filament\Actions\EditAction;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Infolists\Components\ImageEntry;
+use Filament\Infolists\Components\TextEntry;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -28,6 +32,20 @@ class VideoResource extends Resource
             TextInput::make('title')->required()->maxLength(255),
             Textarea::make('description')->maxLength(10000)->columnSpanFull(),
             Toggle::make('prototype_available')->label('Available to family members')->helperText('Members can watch this video once processing finishes.'),
+            Section::make('Preview thumbnail')->columnSpanFull()->schema([
+                ImageEntry::make('thumbnail_preview')->label('Current preview')
+                    ->state(fn (?Video $record): ?string => $record?->thumbnail_path ? route('videos.thumbnail', $record) : null)
+                    ->imageWidth(320)->imageHeight(180)->extraImgAttributes(['style' => 'max-width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover;'])->placeholder('No preview generated yet.'),
+                TextInput::make('thumbnail_offset_seconds')->label('Thumbnail time (seconds)')
+                    ->numeric()->step(0.1)->minValue(0)
+                    ->maxValue(fn (?Video $record): ?float => $record?->duration_seconds ? max(0, $record->duration_seconds - 0.001) : null)
+                    ->disabled(fn (?Video $record): bool => ! config('video.thumbnails') || $record?->status !== VideoStatus::Ready)
+                    ->helperText(fn (): string => config('video.thumbnails')
+                        ? 'Leave empty for automatic selection: 5 seconds, or one third of a short clip. Saving a changed time queues a new preview. Refresh after processing to see it.'
+                        : 'Thumbnail generation is disabled on this server.'),
+                TextEntry::make('thumbnail_error')->label('Preview generation')->color('danger')
+                    ->visible(fn (?Video $record): bool => filled($record?->thumbnail_error)),
+            ]),
         ]);
     }
 

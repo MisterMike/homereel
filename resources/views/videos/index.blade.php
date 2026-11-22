@@ -1,14 +1,23 @@
-<x-layout title="Library">
-    <div class="page-heading"><div><h1>Your family library</h1><p>Good times, ready to revisit.</p></div>@if(auth()->user()->is_admin)<a class="button" href="{{ \App\Filament\Pages\UploadVideo::getUrl() }}">Upload video</a>@endif</div>
-    <div class="video-grid">
-    @forelse($videos as $video)
-        <a class="video-card" href="{{ route('videos.show', $video) }}">
-            <div class="video-cover">@if($video->thumbnail_path)<img src="{{ route('videos.thumbnail', $video) }}" alt="" loading="lazy">@else<span class="cover-placeholder">{{ $video->status === \App\Enums\VideoStatus::Ready ? 'Ready to watch' : ucfirst($video->status->value) }}</span>@endif<span class="duration">{{ $video->duration_label }}</span></div>
-            <h2>{{ $video->title }}</h2><p>{{ $video->created_at->format('j M Y') }}</p>
-        </a>
-    @empty
-        <section class="empty-state"><h2>Your memories start here.</h2><p>{{ auth()->user()->is_admin ? 'Upload your first video. Once it has been inspected, make it available to family members in the administration panel.' : 'There are no videos available yet. Your family administrator will share them here.' }}</p></section>
-    @endforelse
+<x-layout title="Your videos">
+    @php
+        $featured = $videos->currentPage() === 1
+            ? $videos->getCollection()->first(fn ($video) => $video->status === \App\Enums\VideoStatus::Ready && $video->thumbnail_path)
+            : null;
+    @endphp
+    <div class="hr-page-heading">
+        <div><h1>Your videos</h1><p>Your family’s moments, ready to revisit.</p></div>
+        @if(auth()->user()->is_admin)<a class="hr-button hr-mobile-upload" href="{{ route('filament.admin.pages.upload-video') }}"><x-ui.icon name="upload" /> Upload video</a>@endif
     </div>
-    <div class="pagination">{{ $videos->links() }}</div>
+    @if($featured)<x-video.feature :video="$featured" />@endif
+    @if($videos->isNotEmpty())
+        <section aria-labelledby="all-videos-heading">
+            <div class="hr-section-heading"><h2 id="all-videos-heading">All videos</h2><span>{{ number_format($videos->total()) }} {{ $videos->total() === 1 ? 'video' : 'videos' }}</span></div>
+            <div class="video-grid grid grid-cols-1 gap-x-6 gap-y-8 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                @foreach($videos as $video)<x-video.card :video="$video" />@endforeach
+            </div>
+        </section>
+    @else
+        <x-ui.empty-state />
+    @endif
+    @if($videos->hasPages())<div class="hr-pagination">{{ $videos->links() }}</div>@endif
 </x-layout>

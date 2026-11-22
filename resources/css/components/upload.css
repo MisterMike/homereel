@@ -1,0 +1,58 @@
+.upload-panel {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 840px;
+    padding: 32px;
+    border: 1px solid var(--hr-line);
+    border-radius: 18px;
+    background: var(--hr-nav);
+    color: var(--hr-text);
+    font: 400 15px/1.7 var(--hr-font);
+    color-scheme: dark;
+}
+.upload-panel *, .upload-panel *::before, .upload-panel *::after { box-sizing: border-box; }
+.upload-panel p, .upload-panel h2 { margin: 0; }
+.upload-back { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; margin: -10px 0 14px; color: var(--hr-secondary); text-decoration: none; font-size: 14px; }
+.upload-back:hover { color: var(--hr-text); }
+.upload-back .hr-icon { width: 17px; height: 17px; }
+.upload-heading h2 { font-size: 27px; font-weight: 700; letter-spacing: -.035em; line-height: 1.3; }
+.upload-heading p { margin-top: 12px; max-width: 56ch; color: var(--hr-secondary); }
+.upload-file-picker { display: flex; flex-direction: column; align-items: center; padding: 28px 24px; margin-top: 28px; border: 1px dashed var(--hr-input-line); border-radius: var(--hr-radius); background: var(--hr-surface); text-align: center; }
+.upload-file-picker:focus-within { outline: 2px solid var(--hr-accent); outline-offset: 4px; }
+.upload-file-picker>.hr-icon { width: 30px; height: 30px; margin-bottom: 14px; color: var(--hr-accent); }
+.upload-select-title { font-size: 18px; font-weight: 650; }
+.upload-select-hint { margin-top: 4px; color: var(--hr-secondary); font-size: 14px; }
+.upload-file-picker input { display: block; max-width: 100%; min-height: 44px; margin-top: 20px; color: var(--hr-secondary); font: 400 14px var(--hr-font); }
+.upload-file-picker input::file-selector-button { min-height: 44px; padding: 10px 16px; margin-right: 12px; border: 1px solid var(--hr-input-line); border-radius: 9px; background: var(--hr-hover); color: var(--hr-text); font: inherit; cursor: pointer; }
+.upload-file-picker input:disabled::file-selector-button { cursor: default; }
+.upload-panel .upload-formats { margin-top: 12px; color: var(--hr-secondary); text-align: center; font-size: 13px; }
+.upload-file-info { display: flex; align-items: center; gap: 12px; margin: 28px 0; padding: 16px 0; border-block: 1px solid var(--hr-line); }
+.upload-file-info .hr-icon { color: var(--hr-accent); }
+.upload-file-info p { min-width: 0; overflow-wrap: anywhere; font-size: 14px; }
+.upload-title-label { display: block; margin-bottom: 9px; font-size: 15px; font-weight: 600; }
+.upload-progress { margin-top: 28px; font-variant-numeric: tabular-nums; }
+.upload-progress-heading { display: flex; justify-content: space-between; gap: 16px; margin-bottom: 12px; font-size: 14px; }
+.upload-progress-heading strong { color: var(--hr-accent); font-weight: 700; }
+.upload-progress progress { display: block; width: 100%; height: 8px; overflow: hidden; border: 0; border-radius: 6px; background: var(--hr-hover); color: var(--hr-accent); accent-color: var(--hr-accent); }
+.upload-progress progress::-webkit-progress-bar { background: var(--hr-hover); border-radius: 6px; }
+.upload-progress progress::-webkit-progress-value { background: var(--hr-accent); border-radius: 6px; }
+.upload-progress progress::-moz-progress-bar { background: var(--hr-accent); border-radius: 6px; }
+.upload-progress p { margin-top: 10px; color: var(--hr-secondary); font-size: 13px; }
+.upload-panel .upload-message { margin-top: 20px; color: var(--hr-secondary); }
+.upload-panel .hr-form-error { margin-top: 16px; }
+.upload-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 24px; }
+.upload-actions .hr-text-button { margin-left: 6px; }
+.upload-panel .upload-open { margin-top: 20px; }
+.upload-guidance { display: flex; align-items: flex-start; gap: 12px; margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--hr-line); color: var(--hr-secondary); font-size: 13px; line-height: 1.8; }
+.upload-guidance>.hr-icon { width: 17px; height: 17px; color: var(--hr-accent); margin-top: 3px; }
+.upload-guidance p+p { margin-top: 12px; }
+@media (max-width: 767px) {
+    .upload-panel { padding: 22px; border-radius: 14px; }
+    .upload-heading h2 { font-size: 24px; }
+    .upload-file-picker { padding: 24px 12px; }
+    .upload-file-picker input { width: 100%; font-size: 12px; }
+    .upload-file-picker input::file-selector-button { padding-inline: 12px; }
+    .upload-actions { align-items: stretch; }
+    .upload-actions>.hr-button:first-child { flex: 1; }
+    .upload-actions>.hr-text-button { width: 100%; margin-left: 0; }
+}

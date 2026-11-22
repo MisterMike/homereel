@@ -4,6 +4,7 @@ namespace App\Services\Video;
 
 use App\Models\Video;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Symfony\Component\Process\Process;
 
 class VideoInspector
@@ -37,16 +38,26 @@ class VideoInspector
 
     public function thumbnail(Video $video): string
     {
+        $duration = (float) $video->duration_seconds;
+        $offset = $video->thumbnail_offset_seconds ?? min(5, $duration / 3);
+        if (! is_finite($duration) || $duration <= 0 || ! is_finite($offset) || $offset < 0 || $offset >= $duration) {
+            throw new \InvalidArgumentException('Thumbnail time must fall within the video duration.');
+        }
         $disk = Storage::disk(config('video.disk'));
         $disk->makeDirectory('thumbnails');
-        $relative = 'thumbnails/'.$video->uuid.'.jpg';
-        $process = new Process([config('video.ffmpeg'), '-nostdin', '-v', 'error', '-threads', '1', '-protocol_whitelist', 'file', '-ss', (string) min(5, $video->duration_seconds / 3), '-i', $disk->path($video->storage_path), '-frames:v', '1', '-vf', 'scale=640:-2', '-threads', '1', '-y', $disk->path($relative)]);
-        $process->setTimeout(config('video.process_timeout'))->mustRun();
+        // Publish a new file only after successful generation; an old preview stays intact.
+        $relative = 'thumbnails/'.$video->uuid.'-'.Str::uuid().'.jpg';
+        try {
+            $process = new Process([config('video.ffmpeg'), '-nostdin', '-v', 'error', '-threads', '1', '-protocol_whitelist', 'file', '-ss', (string) $offset, '-i', $disk->path($video->storage_path), '-frames:v', '1', '-vf', 'scale=640:-2', '-threads', '1', '-y', $disk->path($relative)]);
+            $process->setTimeout(config('video.process_timeout'))->mustRun();
+            if (! $disk->exists($relative) || $disk->size($relative) === 0 || ! chmod($disk->path($relative), 0600)) {
+                throw new \RuntimeException('No usable thumbnail frame was generated.');
+            }
 
-        if (! chmod($disk->path($relative), 0600)) {
-            throw new \RuntimeException('Cannot protect thumbnail.');
+            return $relative;
+        } catch (\Throwable $exception) {
+            $disk->delete($relative);
+            throw $exception;
         }
-
-        return $relative;
     }
 }

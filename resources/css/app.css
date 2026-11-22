@@ -1,5 +1,14 @@
 @import 'tailwindcss';
+@import './components/tokens.css';
+@import './components/controls.css';
+@import './components/shell.css';
 @import './components/library.css';
+@import './components/login.css';
 @source '../views/**/*.blade.php';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
-@theme { --font-sans: 'HomeReel Inter', sans-serif; }
+@theme inline {
+    --font-sans: var(--hr-font);
+    --color-hr-bg: var(--hr-bg);
+    --color-hr-text: var(--hr-text);
+    --color-hr-accent: var(--hr-accent);
+}

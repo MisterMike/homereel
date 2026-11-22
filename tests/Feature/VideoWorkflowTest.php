@@ -91,14 +91,18 @@ class VideoWorkflowTest extends TestCase
 
     public function test_members_cannot_manage_videos_or_upload_and_only_see_available_videos(): void
     {
-        $private = $this->video();
-        $available = $this->video(['prototype_available' => true, 'title' => 'Shared day']);
+        $private = $this->video(['thumbnail_path' => 'private-preview.jpg']);
+        $available = $this->video(['prototype_available' => true, 'title' => 'Shared day', 'thumbnail_path' => 'shared-preview.jpg']);
         $this->actingAs(User::factory()->create());
         foreach (['/admin', '/admin/videos', '/admin/upload-video'] as $url) {
             $this->get($url)->assertForbidden();
         }
         $this->postJson('/uploads')->assertForbidden();
-        $this->get('/')->assertOk()->assertSee('Shared day')->assertDontSee('Family day');
+        $this->get('/')->assertOk()->assertSee('Shared day')->assertDontSee('Family day')
+            ->assertSee('A moment to revisit')
+            ->assertSee(route('videos.thumbnail', $available), false)
+            ->assertDontSee(route('videos.thumbnail', $private), false)
+            ->assertDontSee(route('filament.admin.pages.upload-video'), false);
         foreach (['', '/stream', '/thumbnail'] as $suffix) {
             $this->get('/videos/'.$private->uuid.$suffix)->assertForbidden();
         }

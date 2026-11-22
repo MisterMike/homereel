@@ -17,7 +17,7 @@ class Video extends Model
 
     protected function casts(): array
     {
-        return ['status' => VideoStatus::class, 'prototype_available' => 'boolean', 'browser_compatible' => 'boolean', 'file_size' => 'integer', 'duration_seconds' => 'float'];
+        return ['status' => VideoStatus::class, 'prototype_available' => 'boolean', 'browser_compatible' => 'boolean', 'file_size' => 'integer', 'duration_seconds' => 'float', 'thumbnail_offset_seconds' => 'float'];
     }
 
     public function getRouteKeyName(): string

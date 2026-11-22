@@ -1,0 +1,29 @@
+@font-face {
+    font-family: 'HomeReel Manrope';
+    src: url('../../fonts/manrope-variable.ttf') format('truetype');
+    font-style: normal;
+    font-weight: 200 800;
+    font-display: swap;
+}
+:root {
+    --hr-bg: #111316;
+    --hr-nav: #17191e;
+    --hr-surface: #202329;
+    --hr-hover: #292d34;
+    --hr-line: #343941;
+    --hr-text: #f5f3ef;
+    --hr-secondary: #b1b3ba;
+    --hr-muted: #9b9fa8;
+    --hr-accent: #ed896d;
+    --hr-accent-hover: #f49b82;
+    --hr-on-accent: #211914;
+    --hr-positive: #78be9b;
+    --hr-warning: #e6b866;
+    --hr-danger: #e49a9a;
+    --hr-input-line: #707681;
+    --hr-font: 'HomeReel Manrope', sans-serif;
+    --hr-radius: 12px;
+    --hr-header-height: 76px;
+    --hr-sidebar-width: 224px;
+    --hr-ease: cubic-bezier(.16, 1, .3, 1);
+}
