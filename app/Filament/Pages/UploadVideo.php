@@ -12,6 +12,6 @@ class UploadVideo extends Page
 
     public static function canAccess(): bool
     {
-        return (bool) auth()->user()?->is_admin;
+        return (bool) auth()->user()?->canUploadVideos();
     }
 }

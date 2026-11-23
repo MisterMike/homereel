@@ -24,6 +24,6 @@
     --hr-font: 'HomeReel Manrope', sans-serif;
     --hr-radius: 12px;
     --hr-header-height: 76px;
-    --hr-sidebar-width: 224px;
+    --hr-sidebar-width: 256px;
     --hr-ease: cubic-bezier(.16, 1, .3, 1);
 }

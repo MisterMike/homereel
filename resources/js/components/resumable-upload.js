@@ -106,7 +106,8 @@ export default function resumableUpload(options) {
                 if (!this.paused && this.session.offset === this.file.size) {
                     this.message = 'Upload received. Finalizing…';
                     const result = await this.request(`${url}/finish`, 'POST');
-                    this.completedUrl = result.video_url; this.message = 'Upload complete. Video inspection is queued.';
+                    this.completedUrl = result.video_url; this.message = 'Upload complete. Your original is safely stored.';
+                    this.$nextTick?.(() => this.$refs.completeHeading?.focus());
                     try { localStorage.removeItem(this.storageKey); } catch { /* Upload is safely complete. */ }
                 } else this.message = 'Paused. Resume to continue from the confirmed offset.';
             } catch (error) {
@@ -119,9 +120,13 @@ export default function resumableUpload(options) {
         reset() {
             if (this.busy) return;
             try { localStorage.removeItem(this.storageKey); } catch { /* Optional browser persistence. */ }
+            const wasCompleted = !!this.completedUrl;
             this.session = null; this.file = null; this.fingerprint = null; this.completedUrl = ''; this.error = ''; this.title = '';
-            this.message = 'Select a video. The abandoned upload will be removed after expiry.';
+            this.message = wasCompleted
+                ? 'Select another video to upload.'
+                : 'Select a video. Any incomplete upload will be removed after expiry.';
             this.$refs.file.value = '';
+            this.$nextTick?.(() => this.$refs.file.focus());
         },
     };
 }

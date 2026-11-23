@@ -86,3 +86,24 @@ test('validation errors remain visible and are not retried', async (t) => {
     await assert.rejects(upload.request('/uploads/session'), /Checksum mismatch/);
     assert.equal(attempts, 1);
 });
+
+test('uploading another video clears the completed upload and returns focus to file selection', () => {
+    const upload = resumableUpload(options);
+    upload.completedUrl = '/videos/clip';
+    upload.session = { id: 'completed-session', offset: 3, size: 3 };
+    upload.file = new File(['abc'], 'clip.mp4');
+    upload.title = 'First video';
+    let focused = false;
+    upload.$refs = { file: { value: 'clip.mp4', focus() { focused = true; } } };
+    upload.$nextTick = callback => callback();
+
+    upload.reset();
+
+    assert.equal(upload.completedUrl, '');
+    assert.equal(upload.session, null);
+    assert.equal(upload.file, null);
+    assert.equal(upload.title, '');
+    assert.equal(upload.$refs.file.value, '');
+    assert.equal(upload.message, 'Select another video to upload.');
+    assert.equal(focused, true);
+});

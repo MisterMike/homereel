@@ -24,7 +24,7 @@ class AuthController extends Controller
         if (RateLimiter::tooManyAttempts($key, 5)) {
             throw ValidationException::withMessages(['email' => 'Too many attempts. Try again in '.RateLimiter::availableIn($key).' seconds.']);
         }
-        if (! Auth::attempt($data)) {
+        if (! Auth::attempt([...$data, 'is_active' => true, 'invitation_token' => null])) {
             RateLimiter::hit($key, 60);
             throw ValidationException::withMessages(['email' => 'The email or password is incorrect.']);
         }

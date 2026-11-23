@@ -42,7 +42,9 @@
 .upload-panel .hr-form-error { margin-top: 16px; }
 .upload-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 24px; }
 .upload-actions .hr-text-button { margin-left: 6px; }
-.upload-panel .upload-open { margin-top: 20px; }
+.upload-complete { margin-top: 28px; padding-top: 28px; border-top: 1px solid var(--hr-line); }
+.upload-complete h2 { color: var(--hr-positive); font-size: 26px; font-weight: 700; line-height: 1.35; letter-spacing: -.025em; }
+.upload-complete p { max-width: 65ch; margin-top: 12px; color: var(--hr-secondary); }
 .upload-guidance { display: flex; align-items: flex-start; gap: 12px; margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--hr-line); color: var(--hr-secondary); font-size: 13px; line-height: 1.8; }
 .upload-guidance>.hr-icon { width: 17px; height: 17px; color: var(--hr-accent); margin-top: 3px; }
 .upload-guidance p+p { margin-top: 12px; }

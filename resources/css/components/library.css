@@ -1,5 +1,7 @@
 .video-card, .video-card-link { min-width: 0; }
-.video-card-link { display: block; border-radius: var(--hr-radius); color: var(--hr-text); }
+.video-card-link { display: block; height: 100%; overflow: hidden; border: 1px solid var(--hr-line); border-radius: var(--hr-radius); background: var(--hr-nav); color: var(--hr-text); }
+.video-card .video-cover { border-radius: 0; }
+.video-card .video-meta { padding: 0 14px 14px; overflow-wrap: anywhere; }
 .video-card-image { position: relative; }
 .video-cover { position: relative; aspect-ratio: 16 / 9; overflow: hidden; border-radius: var(--hr-radius); background: var(--hr-surface); isolation: isolate; }
 .video-cover img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 180ms var(--hr-ease), filter 180ms var(--hr-ease); }
@@ -10,15 +12,15 @@
 .video-play-hint .hr-icon { width: 44px; height: 44px; padding: 12px; border-radius: 50%; background: var(--hr-accent); color: var(--hr-on-accent); stroke-width: 1.8; }
 .video-card-link:hover .video-cover img, .video-card-link:focus-visible .video-cover img { transform: scale(1.025); filter: brightness(.9); }
 .video-card-link:hover .video-cover.has-preview .video-play-hint, .video-card-link:focus-visible .video-cover.has-preview .video-play-hint { opacity: 1; }
-.video-card h3 { display: -webkit-box; overflow: hidden; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow-wrap: anywhere; margin: 13px 0 5px; font-size: 16px; font-weight: 650; line-height: 1.5; letter-spacing: -.02em; }
+.video-card h3 { display: -webkit-box; overflow: hidden; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow-wrap: anywhere; margin: 12px 14px 5px; font-size: 16px; font-weight: 650; line-height: 1.5; letter-spacing: -.02em; }
 .video-card-link:hover h3 { color: var(--hr-accent-hover); }
 .video-duration { position: absolute; bottom: 9px; right: 9px; padding: 2px 6px; border-radius: 5px; background: #111316e8; color: var(--hr-text); font-size: 12px; font-weight: 600; line-height: 1.5; font-variant-numeric: tabular-nums; }
 .video-status { position: absolute; top: 10px; left: 10px; padding: 3px 8px; border-radius: 5px; background: var(--hr-nav); color: var(--hr-warning); font-size: 12px; }
 .video-status[data-status=failed] { color: var(--hr-danger); }
 .video-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 9px; color: var(--hr-secondary); font-size: 14px; line-height: 1.6; }
-.video-meta>span { display: inline-flex; align-items: center; gap: 7px; }
+.video-meta>span { display: inline-flex; align-items: center; gap: 7px; min-width: 0; max-width: 100%; overflow-wrap: anywhere; }
 .video-meta .hr-icon { width: 15px; height: 15px; }
-.video-feature { position: relative; min-height: 308px; margin-bottom: 34px; overflow: hidden; border: 1px solid var(--hr-line); border-radius: 18px; background: var(--hr-nav); isolation: isolate; }
+.video-feature { position: relative; min-height: 308px; margin-bottom: 28px; overflow: hidden; border: 1px solid var(--hr-line); border-radius: 18px; background: var(--hr-nav); isolation: isolate; }
 .video-feature .feature-cover { position: absolute; inset: 0; aspect-ratio: auto; border-radius: 0; }
 .video-feature .feature-cover img { object-position: center 42%; }
 .video-feature .video-play-hint, .video-feature .video-placeholder { display: none; }
@@ -73,3 +75,10 @@
 .video-quality-options button[aria-pressed="true"] { background: var(--hr-accent); color: var(--hr-on-accent); }
 .video-quality-options button span { margin-inline-start: 4px; font-size: 14px; font-variant-numeric: tabular-nums; }
 .video-quality > p { max-width: 54ch; margin: 0; color: var(--hr-secondary); font-size: 14px; }
+
+.hr-library-heading { margin: 0 0 24px; flex-wrap: wrap; }
+.hr-library-heading h1 { min-width: 0; overflow-wrap: anywhere; }
+.hr-library-heading>span { font-size: 16px; }
+.hr-search-summary { margin: -8px 0 24px; color: var(--hr-secondary); overflow-wrap: anywhere; }
+.hr-search-summary a { color: var(--hr-accent); text-decoration: underline; text-underline-offset: 4px; }
+.hr-mobile-library-actions { margin-bottom: 24px; }

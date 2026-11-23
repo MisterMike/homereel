@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\VideoStatus;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Video extends Model
@@ -20,6 +21,11 @@ class Video extends Model
         return ['status' => VideoStatus::class, 'prototype_available' => 'boolean', 'browser_compatible' => 'boolean', 'file_size' => 'integer', 'duration_seconds' => 'float', 'thumbnail_offset_seconds' => 'float', 'optimized_file_size' => 'integer', 'optimization_reserved_bytes' => 'integer'];
     }
 
+    public function album(): BelongsTo
+    {
+        return $this->belongsTo(Album::class);
+    }
+
     public function hasOptimizedCopy(): bool
     {
         return $this->optimization_status === 'ready' && filled($this->optimized_path);
@@ -33,7 +39,14 @@ class Video extends Model
     public function scopeVisibleTo(Builder $query, User $user): void
     {
         if (! $user->is_admin) {
-            $query->where('prototype_available', true)->where('status', VideoStatus::Ready);
+            $query->where(function (Builder $query) use ($user): void {
+                $query->where(function (Builder $query): void {
+                    $query->where('prototype_available', true)->where('status', VideoStatus::Ready);
+                });
+                if ($user->canUploadVideos()) {
+                    $query->orWhere('uploaded_by', $user->id);
+                }
+            });
         }
     }
 

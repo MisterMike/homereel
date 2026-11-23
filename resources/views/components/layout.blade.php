@@ -10,8 +10,8 @@
 </head>
 <body class="home-app {{ auth()->check() ? 'is-authenticated' : 'is-guest' }}">
     <a class="hr-skip-link" href="#main-content">Skip to content</a>
-    <x-navigation.header />
-    @auth <x-navigation.sidebar /> @endauth
+    <x-navigation.header :albums="$navigationAlbums ?? collect()" :active-album-id="$activeAlbumId ?? null" :search="$librarySearch ?? ''" />
+    @auth <x-navigation.sidebar :albums="$navigationAlbums" :video-count="$navigationVideoCount" :active-album-id="$activeAlbumId" /> @endauth
     <div class="hr-content-area">
         <main id="main-content" class="hr-main" tabindex="-1">{{ $slot }}</main>
         <footer class="hr-footer"><span>HomeReel</span><span><x-ui.icon name="lock" /> A little more private. A little more personal.</span></footer>

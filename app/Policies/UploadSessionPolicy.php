@@ -9,7 +9,7 @@ class UploadSessionPolicy
 {
     public function view(User $user, UploadSession $upload): bool
     {
-        return $user->is_admin && $upload->user_id === $user->id;
+        return $user->canUploadVideos() && $upload->user_id === $user->id;
     }
 
     public function update(User $user, UploadSession $upload): bool

@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Http\Middleware\ActiveUser;
 use App\Http\Middleware\PrivateResponse;
 use App\Services\Video\PrivateAvatar;
 use Filament\Actions\Action;
@@ -63,6 +64,7 @@ class AdminPanelProvider extends PanelProvider
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
                 PrivateResponse::class,
+                ActiveUser::class,
             ])
             ->authMiddleware([
                 Authenticate::class,
