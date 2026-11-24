@@ -21,10 +21,12 @@ class VideoOptimization
                     abort_if($video->optimized_path || in_array($video->optimization_status, ['queued', 'processing'], true), 409, 'Eine optimierte Kopie ist bereits vorhanden oder wird vorbereitet.');
                     $duration = (float) $video->duration_seconds;
                     abort_unless(is_finite($duration) && $duration > 0, 409, 'Prüfe das Video vor der Optimierung.');
-                    $reservation = (int) ceil($duration * 2628000 / 8 * 1.15) + 1048576;
+                    $settings = app(ConversionSettings::class);
+                    $profile = $settings->profile();
+                    $reservation = $settings->reservationBytes($duration, $profile);
                     abort_if(app(VideoStorageBudget::class)->used() + $reservation > config('video.storage_limit_bytes'), 422, 'Nicht genug Videospeicher für eine optimierte Kopie.');
                     $token = (string) Str::uuid();
-                    $video->update(['optimization_status' => 'queued', 'optimization_token' => $token, 'optimization_reserved_bytes' => $reservation, 'optimization_error' => null]);
+                    $video->update(['optimization_status' => 'queued', 'optimization_token' => $token, 'optimization_reserved_bytes' => $reservation, 'optimization_profile' => $profile, 'optimization_error' => null]);
                     OptimizeVideo::dispatch($video->id, $token)->beforeCommit();
                 });
             });

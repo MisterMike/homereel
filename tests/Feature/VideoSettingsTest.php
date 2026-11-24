@@ -96,6 +96,30 @@ class VideoSettingsTest extends TestCase
         $this->assertDatabaseCount('video_conversion_settings', 1);
     }
 
+    public function test_administrator_can_save_quality_controls_and_read_the_saved_ffmpeg_options(): void
+    {
+        $this->admin();
+        Livewire::test(VideoSettings::class)
+            ->assertSet('data.crf', 23)->assertSet('data.max_height', 720)
+            ->set('data.crf', 18)->set('data.preset', 'fast')->set('data.max_height', 1080)
+            ->set('data.video_bitrate', 8000)->set('data.audio_bitrate', 192)->call('save')->assertHasNoErrors()
+            ->assertSee('-crf 18')->assertSee('-maxrate 8000k');
+
+        $this->assertSame(['crf' => 18, 'preset' => 'fast', 'max_height' => 1080, 'video_bitrate' => 8000, 'audio_bitrate' => 192], app(ConversionSettings::class)->profile());
+        Livewire::test(VideoSettings::class)->assertSet('data.crf', 18)->assertSet('data.video_bitrate', 8000);
+        app(ConversionSettings::class)->save(false, false);
+        $this->assertSame(18, app(ConversionSettings::class)->profile()['crf']);
+    }
+
+    public function test_invalid_encoding_parameters_are_rejected_without_changing_settings(): void
+    {
+        $this->admin();
+        foreach (['crf' => 15, 'video_bitrate' => 0, 'audio_bitrate' => 999, 'preset' => 'fast -i /tmp/input', 'max_height' => 999] as $field => $value) {
+            Livewire::test(VideoSettings::class)->set('data.'.$field, $value)->call('save')->assertHasErrors(['data.'.$field]);
+        }
+        $this->assertDatabaseCount('video_conversion_settings', 0);
+    }
+
     public function test_settings_are_validated_and_save_rechecks_administrator_access(): void
     {
         $this->admin();

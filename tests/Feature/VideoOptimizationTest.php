@@ -8,6 +8,7 @@ use App\Jobs\OptimizeVideo;
 use App\Jobs\ProcessVideo;
 use App\Models\User;
 use App\Models\Video;
+use App\Services\Video\ConversionSettings;
 use App\Services\Video\MediaLock;
 use App\Services\Video\VideoInspector;
 use App\Services\Video\VideoOptimization;
@@ -19,7 +20,9 @@ use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Livewire\Livewire;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+use Symfony\Component\Process\Process;
 use Tests\TestCase;
 
 class VideoOptimizationTest extends TestCase
@@ -149,6 +152,81 @@ class VideoOptimizationTest extends TestCase
         $this->get(route('videos.stream', $video))->assertOk();
         app(VideoOptimization::class)->queue($video);
         $this->assertSame('queued', $video->fresh()->optimization_status);
+    }
+
+    /** @return array<string, array{int, int}> */
+    public static function resolutionLimits(): array
+    {
+        return ['720p' => [720, 720], '1080p' => [1080, 1080], 'original dimensions' => [0, 1080]];
+    }
+
+    #[DataProvider('resolutionLimits')]
+    public function test_encoding_uses_the_selected_quality_and_resolution(int $maxHeight, int $expectedHeight): void
+    {
+        $video = $this->video();
+        (new Process([
+            config('video.ffmpeg'), '-nostdin', '-v', 'error', '-f', 'lavfi', '-i', 'testsrc2=size=1920x1080:rate=5',
+            '-t', '0.4', '-c:v', 'libx264', '-preset', 'ultrafast', '-pix_fmt', 'yuv420p', '-threads', '1',
+            '-f', 'mp4', '-y', Storage::disk('videos')->path($video->storage_path),
+        ]))->setTimeout(30)->mustRun();
+        $video->update([...app(VideoInspector::class)->inspect($video), 'file_size' => Storage::disk('videos')->size($video->storage_path)]);
+        app(ConversionSettings::class)->save(true, false, [
+            'crf' => 18, 'preset' => 'fast', 'max_height' => $maxHeight, 'video_bitrate' => 8000, 'audio_bitrate' => 192,
+        ]);
+        app(VideoOptimization::class)->queue($video);
+        $this->runJob($video->refresh());
+
+        $video->refresh();
+        $this->assertTrue($video->hasOptimizedCopy());
+        $this->assertSame($expectedHeight, $video->optimized_height);
+        $this->assertSame(18, $video->optimization_profile['crf']);
+        $this->assertSame(8000, $video->optimization_profile['video_bitrate']);
+    }
+
+    public function test_waiting_jobs_pick_up_saved_quality_and_running_jobs_keep_their_profile(): void
+    {
+        $video = $this->video();
+        app(VideoOptimization::class)->queue($video);
+        $oldReservation = $video->optimization_reserved_bytes;
+        app(ConversionSettings::class)->save(true, false, ['crf' => 18, 'max_height' => 1080, 'video_bitrate' => 8000, 'audio_bitrate' => 192]);
+        $this->mock(VideoOptimizer::class, function ($mock) use ($oldReservation): void {
+            $mock->makePartial();
+            $mock->shouldReceive('encode')->once()->andReturnUsing(function (Video $record, string $token) use ($oldReservation): array {
+                $this->assertSame(18, $record->optimization_profile['crf']);
+                $this->assertGreaterThan($oldReservation, $record->optimization_reserved_bytes);
+                app(ConversionSettings::class)->save(true, false, ConversionSettings::DEFAULT_PROFILE);
+                $this->assertSame(18, $record->optimization_profile['crf']);
+
+                return (new VideoOptimizer)->encode($record, $token);
+            });
+        });
+        $this->runJob($video->refresh());
+
+        $this->assertTrue($video->fresh()->hasOptimizedCopy());
+        $this->assertSame(18, $video->fresh()->optimization_profile['crf']);
+        $this->assertSame(23, app(ConversionSettings::class)->profile()['crf']);
+    }
+
+    public function test_quality_increase_cannot_exceed_the_storage_quota_for_a_waiting_job(): void
+    {
+        $video = $this->video();
+        app(VideoOptimization::class)->queue($video);
+        config(['video.storage_limit_bytes' => $video->file_size + $video->optimization_reserved_bytes + 1]);
+        app(ConversionSettings::class)->save(true, false, ['video_bitrate' => 10000]);
+        $this->mock(VideoOptimizer::class, function ($mock): void {
+            $mock->makePartial();
+            $mock->shouldNotReceive('encode');
+        });
+        try {
+            $this->runJob($video->refresh());
+            $this->fail('A larger conversion reservation should exceed the quota.');
+        } catch (HttpException $exception) {
+            $this->assertSame(422, $exception->getStatusCode());
+        }
+        $this->assertSame('failed', $video->fresh()->optimization_status);
+        $this->assertSame(0, $video->fresh()->optimization_reserved_bytes);
+        $this->assertSame(VideoStatus::Ready, $video->fresh()->status);
+        Storage::disk('videos')->assertExists($video->storage_path);
     }
 
     public function test_disabled_optimization_and_storage_shortage_do_not_enqueue_jobs(): void

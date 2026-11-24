@@ -7,6 +7,7 @@ use App\Models\Video;
 use App\Services\Video\ConversionSettings;
 use App\Services\Video\MediaLock;
 use App\Services\Video\VideoOptimizer;
+use App\Services\Video\VideoStorageBudget;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Log;
@@ -37,7 +38,7 @@ class OptimizeVideo implements ShouldQueue
         }
         try {
             $lock->run('optimization-'.$video->uuid, function () use ($video, $optimizer, $lock): void {
-                $eligible = $lock->run($video->uuid, function () use ($video): bool {
+                $eligible = $lock->run($video->uuid, function () use ($video, $lock): bool {
                     $video->refresh();
                     if ($video->optimization_token !== $this->token || $video->hasOptimizedCopy()) {
                         return false;
@@ -47,7 +48,14 @@ class OptimizeVideo implements ShouldQueue
 
                         return false;
                     }
-                    $video->update(['optimization_status' => 'processing']);
+                    $lock->run('quota', function () use ($video): void {
+                        $settings = app(ConversionSettings::class);
+                        $profile = $settings->profile();
+                        $reservation = $settings->reservationBytes((float) $video->duration_seconds, $profile);
+                        $used = app(VideoStorageBudget::class)->used() - $video->optimization_reserved_bytes;
+                        abort_if($used + $reservation > config('video.storage_limit_bytes'), 422, 'Nicht genug Videospeicher für die gewählte Konvertierungsqualität.');
+                        $video->update(['optimization_status' => 'processing', 'optimization_profile' => $profile, 'optimization_reserved_bytes' => $reservation]);
+                    }, wait: true);
 
                     return true;
                 }, wait: true);

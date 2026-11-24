@@ -61,7 +61,7 @@ class VideoResource extends Resource
                 TextEntry::make('optimization_status')->label('MP4-Kopie')->formatStateUsing(fn (?string $state): string => __('statuses.'.($state ?? 'not_requested'))),
                 TextEntry::make('optimized_file_size')->label('Grösse der optimierten Kopie')->formatStateUsing(fn ($state): string => number_format($state / 1048576, 1, ',', '.').' MiB')->placeholder('Noch keine Kopie'),
                 TextEntry::make('optimization_error')->label('Optimierung')->color('danger')->visible(fn (?Video $record): bool => filled($record?->optimization_error)),
-            ])->description('Eine separate H.264/AAC-MP4-Datei mit bis zu 720p. Sobald sie bereit ist, bietet der Player die Auswahl zwischen optimierter Version und Original.'),
+            ])->description('Eine separate H.264/AAC-MP4-Datei mit der Qualität aus den Videoeinstellungen. Sobald sie bereit ist, bietet der Player die Auswahl zwischen optimierter Version und Original.'),
             Section::make('Vorschaubild')->columnSpanFull()->schema([
                 ImageEntry::make('thumbnail_preview')->label('Aktuelles Vorschaubild')
                     ->state(fn (?Video $record): ?string => $record?->thumbnail_path ? route('videos.thumbnail', $record) : null)

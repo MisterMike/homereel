@@ -68,7 +68,7 @@ class EditVideo extends EditRecord
                 ->color('gray')
                 ->visible(fn (): bool => app(ConversionSettings::class)->enabled() && ! $this->record->hasOptimizedCopy())
                 ->disabled(fn (): bool => $this->record->status !== VideoStatus::Ready || in_array($this->record->optimization_status, ['queued', 'processing'], true))
-                ->requiresConfirmation()->modalDescription('Erstelle eine private H.264/AAC-MP4-Datei mit bis zu 720p. Das Original bleibt erhalten und abspielbar. Die Konvertierung kann mehrere Minuten dauern.')
+                ->requiresConfirmation()->modalDescription('Erstelle eine private H.264/AAC-MP4-Datei mit der Qualität aus den Videoeinstellungen. Das Original bleibt erhalten und abspielbar. Die Konvertierung kann mehrere Minuten dauern.')
                 ->action(function (): void {
                     Gate::authorize('update', $this->record);
                     app(VideoOptimization::class)->queue($this->record);
