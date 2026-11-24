@@ -6,6 +6,7 @@ use App\Enums\VideoStatus;
 use App\Filament\Resources\Videos\Pages\EditVideo;
 use App\Filament\Resources\Videos\Pages\ListVideos;
 use App\Models\Video;
+use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
@@ -18,6 +19,7 @@ use Filament\Infolists\Components\TextEntry;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -26,6 +28,8 @@ use Illuminate\Database\Eloquent\Builder;
 class VideoResource extends Resource
 {
     protected static ?string $model = Video::class;
+
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedFilm;
 
     protected static ?string $modelLabel = 'Video';
 
