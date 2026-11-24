@@ -2,13 +2,21 @@
 
 use Illuminate\Support\Facades\Schedule;
 
-// Clean up abandoned uploads every hour
 Schedule::command('uploads:cleanup')
-    ->hourly();
+    ->hourly()
+    ->withoutOverlapping();
 
-// Process queued video jobs
-Schedule::command(
-    'queue:work --stop-when-empty --tries=3 --timeout=60 --max-time=50'
-)
+$processingTimeout = 2 * (int) config('video.process_timeout') + 30;
+$conversionTimeout = (int) config('video.optimization_timeout') + 90;
+
+Schedule::command('queue:work database --stop-when-empty --tries=3 --timeout='.$processingTimeout.' --max-time=50')
     ->everyMinute()
-    ->withoutOverlapping(10);
+    ->withoutOverlapping((int) ceil(($processingTimeout + 50) / 60) + 1)
+    ->runInBackground()
+    ->appendOutputTo(storage_path('logs/queue.log'));
+
+Schedule::command('queue:work transcoding --queue=transcoding --stop-when-empty --tries=1 --timeout='.$conversionTimeout.' --max-time=50')
+    ->everyMinute()
+    ->withoutOverlapping((int) ceil(($conversionTimeout + 50) / 60) + 1)
+    ->runInBackground()
+    ->appendOutputTo(storage_path('logs/transcoding.log'));
