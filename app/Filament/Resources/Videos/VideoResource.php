@@ -54,7 +54,8 @@ class VideoResource extends Resource
             TextInput::make('title')->label('Titel')->required()->maxLength(255),
             Select::make('album_id')->relationship('album', 'name')->searchable()->preload()->exists('albums', 'id')->label('Album')->placeholder('Kein Album'),
             DatePicker::make('recorded_on')->label('Aufnahmedatum')->nullable()->minDate('1000-01-01')->maxDate(today())
-                ->helperText('Wird nach Möglichkeit aus der Videodatei erkannt und kann korrigiert werden. Metadaten können auch das Exportdatum enthalten. Ohne Aufnahmedatum gilt für die Sortierung das Upload-Datum.'),
+                ->native(false)->displayFormat('d.m.Y')->format('Y-m-d')->firstDayOfWeek(1)->closeOnDateSelection()
+                ->helperText('Im Kalender kannst du den Monat auswählen und das Jahr direkt eingeben. Das Datum wird nach Möglichkeit aus der Videodatei erkannt; es kann auch das Exportdatum sein. Ohne Aufnahmedatum gilt für die Sortierung das Upload-Datum.'),
             Textarea::make('description')->label('Beschreibung')->maxLength(10000)->columnSpanFull(),
             Toggle::make('prototype_available')->label('Für Familienmitglieder verfügbar')->default(true)->helperText('Neue Uploads sind standardmässig nach der Verarbeitung für deine Familie verfügbar. Deaktiviere dies, um ein Video nur für dich und Administratoren sichtbar zu machen.'),
             Section::make('Optimierte Wiedergabe')->columnSpanFull()->schema([

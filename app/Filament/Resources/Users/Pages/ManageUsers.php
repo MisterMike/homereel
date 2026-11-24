@@ -24,7 +24,8 @@ class ManageUsers extends ManageRecords
     {
         return [
             Action::make('inviteUser')->label('Person einladen')->schema([
-                TextInput::make('name')->required()->maxLength(255),
+                TextInput::make('name')->label('Anzeigename')->required()->maxLength(255)
+                    ->helperText('So erscheint die Person in der Mediathek. Für die Anmeldung verwendet sie ihre E-Mail-Adresse.'),
                 TextInput::make('email')->label('E-Mail-Adresse')->email()->required()->maxLength(255)->unique(User::class, 'email'),
                 Select::make('role')->label('Rolle')->options(User::roles())->default('viewer')->required()
                     ->helperText('Zuschauer sehen freigegebene Videos. Mitwirkende verwalten ihre eigenen Uploads. Administratoren verwalten alle Videos, Alben und Personen.'),

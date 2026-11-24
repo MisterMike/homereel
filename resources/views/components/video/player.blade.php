@@ -10,7 +10,7 @@
 @endphp
 <div x-data="videoPlayer({{ Js::from($playerOptions) }})">
 <section class="video-stage" :class="{ 'has-playback-error': failed }" aria-label="Videoplayer">
-    <video x-ref="video" class="video-player" controls playsinline preload="metadata" aria-label="{{ $video->title }}" @if($video->thumbnail_path) poster="{{ route('videos.thumbnail', $video) }}" @endif src="{{ $sources[$initialQuality] }}" @loadedmetadata="restorePlayback()" @loadstart="loading = true" @loadeddata="loading = false" @canplay="loading = false" @play="loading = $refs.video.readyState < 3" @pause="loading = false" @playing="loading = false; failed = false; recordView()" @waiting="loading = !$refs.video.paused" x-on:error="loading = false; failed = true">
+    <video x-ref="video" class="video-player" controls playsinline preload="metadata" aria-label="{{ $video->title }}" @if($video->thumbnail_path) poster="{{ route('videos.thumbnail', $video) }}" @endif src="{{ $sources[$initialQuality] }}" @loadedmetadata="restorePlayback()" @loadstart="loading = true" @loadeddata="loading = false" @canplay="loading = false" @play="loading = $refs.video.readyState < 3; handleOrientationChange()" @pause="loading = false" @playing="loading = false; failed = false; recordView(); handleOrientationChange()" @waiting="loading = !$refs.video.paused" x-on:error="loading = false; failed = true">
         Dein Browser unterstützt diesen Videoplayer nicht.
     </video>
     <p class="video-loading" x-show="loading && !failed" x-cloak role="status">Video wird geladen…</p>
@@ -30,5 +30,9 @@
         <p>Die optimierte Version benötigt meist weniger Bandbreite. Das Original bietet die hochgeladene Qualität.</p>
     </div>
 @endif
+<div class="video-quality" x-show="offerFullscreen" x-cloak>
+    <button type="button" class="hr-button hr-button-secondary" @click="enterFullscreen()"><x-ui.icon name="fullscreen" /> Vollbild</button>
+    <p x-show="fullscreenNeedsTap" role="status">Tippe auf «Vollbild», um das Video bildschirmfüllend anzusehen.</p>
+</div>
 <p class="sr-only" role="status" x-text="playbackMessage"></p>
 </div>

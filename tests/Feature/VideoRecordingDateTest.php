@@ -149,11 +149,13 @@ class VideoRecordingDateTest extends TestCase
 
     public function test_the_date_can_be_edited_and_cleared_and_invalid_or_future_dates_are_rejected(): void
     {
-        $video = $this->video();
+        $video = $this->video(['recorded_on' => '2023-06-26']);
         Livewire::test(EditVideo::class, ['record' => $video->uuid])
+            ->assertFormSet(['recorded_on' => '2023-06-26'])
             ->fillForm(['recorded_on' => '1978-08-15'])->call('save')->assertHasNoFormErrors();
         $this->assertSame('1978-08-15', $video->fresh()->recorded_on->toDateString());
         Livewire::test(EditVideo::class, ['record' => $video->uuid])
+            ->assertFormSet(['recorded_on' => '1978-08-15'])
             ->fillForm(['recorded_on' => null])->call('save')->assertHasNoFormErrors();
         $this->assertNull($video->fresh()->recorded_on);
 

@@ -36,7 +36,7 @@ class UserResource extends Resource
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
-            TextInput::make('name')->label('Name')->required()->maxLength(255),
+            TextInput::make('name')->label('Anzeigename')->required()->maxLength(255),
             TextInput::make('email')->label('E-Mail-Adresse')->email()->disabled()->dehydrated(false),
             Select::make('role')->label('Rolle')->options(User::roles())->required()
                 ->helperText('Zuschauer sehen freigegebene Videos. Mitwirkende laden auch Videos hoch und verwalten ihre eigenen Videos. Administratoren verwalten die gesamte Mediathek und alle Personen.'),

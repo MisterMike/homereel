@@ -9,6 +9,7 @@
 .hr-login-form>p { color: var(--hr-secondary); margin: 10px 0 32px; font-size: 15px; }
 .hr-login-form label { display: block; margin-bottom: 9px; font-size: 15px; font-weight: 600; }
 .hr-login-form .hr-input { margin-bottom: 24px; }
+.hr-login-form .hr-field-help { margin: -14px 0 24px; color: var(--hr-secondary); font-size: 14px; line-height: 1.6; overflow-wrap: anywhere; }
 .hr-login-form .hr-button { justify-content: space-between; width: 100%; margin-top: 8px; }
 .hr-login-form .hr-form-error { margin-bottom: 20px; }
 .hr-login-form>.hr-access-note { display: flex; align-items: flex-start; gap: 10px; margin-top: 28px; font-size: 13px; line-height: 1.85; }

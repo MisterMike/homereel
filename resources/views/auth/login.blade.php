@@ -10,7 +10,8 @@
             <p>Melde dich bei der Video-Mediathek deiner Familie an.</p>
             <form method="POST" action="{{ route('login') }}">@csrf
                 <label for="email">E-Mail-Adresse</label>
-                <input class="hr-input" id="email" name="email" type="email" autocomplete="username" value="{{ old('email') }}" required autofocus @if($errors->any()) aria-invalid="true" aria-describedby="login-error" @endif>
+                <input class="hr-input" id="email" name="email" type="email" inputmode="email" autocapitalize="none" spellcheck="false" autocomplete="username" value="{{ old('email') }}" required autofocus aria-describedby="login-email-help{{ $errors->any() ? ' login-error' : '' }}" @if($errors->any()) aria-invalid="true" @endif>
+                <p id="login-email-help" class="hr-field-help">Verwende die E-Mail-Adresse, an die deine Einladung gesendet wurde.</p>
                 <label for="password">Passwort</label>
                 <input class="hr-input" id="password" name="password" type="password" autocomplete="current-password" required @if($errors->any()) aria-describedby="login-error" @endif>
                 @if($errors->any())<p id="login-error" class="hr-form-error" role="alert">{{ $errors->first() }}</p>@endif

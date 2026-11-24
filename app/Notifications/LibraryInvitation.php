@@ -27,7 +27,9 @@ class LibraryInvitation extends Notification implements ShouldQueue
         return (new MailMessage)->subject('Du bist zu HomeReel eingeladen')
             ->greeting('Hallo '.$notifiable->name.',')
             ->line('Du wurdest zur privaten Video-Mediathek deiner Familie eingeladen.')
-            ->action('Einladung annehmen', $this->url)
-            ->line('Wähle dein Passwort, um loszulegen. Diese Einladung läuft in sieben Tagen ab.');
+            ->line('Deine E-Mail-Adresse für die Anmeldung: '.$notifiable->email)
+            ->line('Lege über den folgenden Button dein Passwort fest. Danach bist du direkt angemeldet. Für spätere Anmeldungen verwendest du diese E-Mail-Adresse und dein Passwort.')
+            ->action('Passwort festlegen', $this->url)
+            ->line('Diese Einladung ist sieben Tage gültig.');
     }
 }

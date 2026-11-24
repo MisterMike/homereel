@@ -69,7 +69,18 @@ class LibraryManagementTest extends TestCase
         Notification::fake();
         $user = app(UserInvitations::class)->invite($this->admin(), ['name' => 'Guest', 'email' => 'guest@example.test', 'role' => 'viewer']);
         $invitation = Notification::sent($user, LibraryInvitation::class)->first();
-        $this->get($invitation->url)->assertOk()->assertHeader('Referrer-Policy', 'no-referrer');
+        $response = $this->get($invitation->url)->assertOk()->assertHeader('Referrer-Policy', 'no-referrer')
+            ->assertSee('Mit dieser E-Mail-Adresse und deinem Passwort meldest du dich künftig an.')
+            ->assertSee('Passwort speichern und starten');
+        $document = new \DOMDocument;
+        @$document->loadHTML($response->getContent());
+        $emailField = (new \DOMXPath($document))->query('//input[@name="email"]')->item(0);
+        $this->assertSame($user->email, $emailField->getAttribute('value'));
+        $this->assertSame('username', $emailField->getAttribute('autocomplete'));
+        $this->assertTrue($emailField->hasAttribute('readonly'));
+        $mail = $invitation->toMail($user);
+        $this->assertStringContainsString($user->email, implode(' ', $mail->introLines));
+        $this->assertSame('Passwort festlegen', $mail->actionText);
         $this->post($invitation->url, ['password' => 'short', 'password_confirmation' => 'different'])->assertSessionHasErrors('password');
         $this->assertNotNull($user->fresh()->invitation_token);
 
@@ -78,6 +89,10 @@ class LibraryManagementTest extends TestCase
         $this->assertAuthenticatedAs($user);
         $this->assertTrue(Hash::check('family-password-2026', $user->fresh()->password));
         $this->assertNull($user->fresh()->invitation_token);
+        $this->post('/logout');
+        $this->get('/login')->assertOk()->assertSee('Verwende die E-Mail-Adresse, an die deine Einladung gesendet wurde.');
+        $this->post('/login', ['email' => $user->email, 'password' => 'family-password-2026'])->assertRedirect(route('videos.index'));
+        $this->assertAuthenticatedAs($user);
         $this->post('/logout');
         $this->post($invitation->url, ['password' => 'replacement-password', 'password_confirmation' => 'replacement-password'])->assertGone();
         $this->assertTrue(Hash::check('family-password-2026', $user->fresh()->password));
