@@ -44,7 +44,10 @@ class ProcessVideo implements ShouldQueue
             }
             $video->update(['status' => VideoStatus::Processing, 'processing_error' => null]);
             try {
-                $video->fill($inspector->inspect($video));
+                $metadata = $inspector->inspect($video);
+                $recordedOn = $metadata['recorded_on'] ?? null;
+                unset($metadata['recorded_on']);
+                $video->fill($metadata);
                 $previousThumbnail = $video->thumbnail_path;
                 if (config('video.thumbnails')) {
                     try {
@@ -57,6 +60,9 @@ class ProcessVideo implements ShouldQueue
                 }
                 $video->status = VideoStatus::Ready;
                 $video->save();
+                if ($recordedOn) {
+                    Video::whereKey($video->id)->whereNull('recorded_on')->update(['recorded_on' => $recordedOn]);
+                }
                 if ($previousThumbnail && $previousThumbnail !== $video->thumbnail_path) {
                     try {
                         Storage::disk(config('video.disk'))->delete($previousThumbnail);

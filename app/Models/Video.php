@@ -18,7 +18,7 @@ class Video extends Model
 
     protected function casts(): array
     {
-        return ['status' => VideoStatus::class, 'prototype_available' => 'boolean', 'browser_compatible' => 'boolean', 'file_size' => 'integer', 'duration_seconds' => 'float', 'thumbnail_offset_seconds' => 'float', 'optimized_file_size' => 'integer', 'optimization_reserved_bytes' => 'integer', 'view_count' => 'integer'];
+        return ['status' => VideoStatus::class, 'prototype_available' => 'boolean', 'browser_compatible' => 'boolean', 'file_size' => 'integer', 'duration_seconds' => 'float', 'thumbnail_offset_seconds' => 'float', 'optimized_file_size' => 'integer', 'optimization_reserved_bytes' => 'integer', 'view_count' => 'integer', 'recorded_on' => 'date'];
     }
 
     public function album(): BelongsTo
@@ -48,6 +48,13 @@ class Video extends Model
                 }
             });
         }
+    }
+
+    public function scopeByRecordingDate(Builder $query, string $direction = 'desc'): void
+    {
+        $direction = $direction === 'asc' ? 'asc' : 'desc';
+        $query->orderByRaw('COALESCE(recorded_on, DATE(created_at)) '.$direction)
+            ->orderBy('created_at', $direction)->orderBy('id', $direction);
     }
 
     public function getDurationLabelAttribute(): string

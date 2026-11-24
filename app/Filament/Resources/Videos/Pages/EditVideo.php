@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Videos\Pages;
 
 use App\Enums\VideoStatus;
 use App\Filament\Resources\Videos\VideoResource;
+use App\Jobs\DetectVideoRecordingDate;
 use App\Jobs\GenerateVideoThumbnail;
 use App\Jobs\ProcessVideo;
 use App\Services\Video\ConversionSettings;
@@ -51,6 +52,18 @@ class EditVideo extends EditRecord
     {
         return [
             $this->getSaveFormAction()->formId('form'),
+            Action::make('detectRecordedOn')->label('Aufnahmedatum erkennen')->icon('heroicon-o-calendar')->color('gray')
+                ->visible(fn (): bool => $this->record->recorded_on === null)
+                ->disabled(fn (): bool => $this->record->status !== VideoStatus::Ready)
+                ->action(function (): void {
+                    $this->save(shouldRedirect: false, shouldSendSavedNotification: false);
+                    Gate::authorize('update', $this->record);
+                    if ($this->record->recorded_on !== null) {
+                        return;
+                    }
+                    DetectVideoRecordingDate::dispatch($this->record->id)->afterCommit();
+                    Notification::make()->title('Datumserkennung vorgemerkt')->body('Lade diese Seite nach der Verarbeitung neu. Falls die Datei kein gültiges Datum enthält, bleibt das Feld leer.')->success()->send();
+                }),
             Action::make('optimize')->label(fn (): string => $this->record->optimization_status === 'failed' ? 'MP4-Optimierung erneut versuchen' : 'Optimierte MP4 erstellen')->icon('heroicon-o-film')
                 ->color('gray')
                 ->visible(fn (): bool => app(ConversionSettings::class)->enabled() && ! $this->record->hasOptimizedCopy())

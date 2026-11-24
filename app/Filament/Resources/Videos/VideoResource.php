@@ -10,6 +10,7 @@ use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
+use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -52,6 +53,8 @@ class VideoResource extends Resource
         return $schema->components([
             TextInput::make('title')->label('Titel')->required()->maxLength(255),
             Select::make('album_id')->relationship('album', 'name')->searchable()->preload()->exists('albums', 'id')->label('Album')->placeholder('Kein Album'),
+            DatePicker::make('recorded_on')->label('Aufnahmedatum')->nullable()->minDate('1000-01-01')->maxDate(today())
+                ->helperText('Wird nach Möglichkeit aus der Videodatei erkannt und kann korrigiert werden. Metadaten können auch das Exportdatum enthalten. Ohne Aufnahmedatum gilt für die Sortierung das Upload-Datum.'),
             Textarea::make('description')->label('Beschreibung')->maxLength(10000)->columnSpanFull(),
             Toggle::make('prototype_available')->label('Für Familienmitglieder verfügbar')->default(true)->helperText('Neue Uploads sind standardmässig nach der Verarbeitung für deine Familie verfügbar. Deaktiviere dies, um ein Video nur für dich und Administratoren sichtbar zu machen.'),
             Section::make('Optimierte Wiedergabe')->columnSpanFull()->schema([
@@ -80,12 +83,14 @@ class VideoResource extends Resource
     {
         return $table->columns([
             TextColumn::make('title')->label('Titel')->searchable(), TextColumn::make('album.name')->label('Album')->placeholder('Kein Album')->sortable(), TextColumn::make('created_at')->label('Hochgeladen')->dateTime('d.m.Y H:i')->sortable(),
+            TextColumn::make('recorded_on')->label('Aufnahmedatum')->date('d.m.Y')->placeholder('Unbekannt')
+                ->sortable(query: fn (Builder $query, string $direction): Builder => $query->byRecordingDate($direction)),
             TextColumn::make('file_size')->label('Grösse')->formatStateUsing(fn ($state) => number_format($state / 1048576, 1, ',', '.').' MiB'),
             TextColumn::make('optimization_status')->label('MP4-Kopie')->formatStateUsing(fn (?string $state): string => __('statuses.'.($state ?? 'not_requested')))->badge(),
             TextColumn::make('duration_label')->label('Dauer'), TextColumn::make('status')->formatStateUsing(fn (VideoStatus $state): string => __('statuses.'.$state->value))->badge(),
             TextColumn::make('view_count')->label('Aufrufe')->formatStateUsing(fn (int $state): string => number_format($state, 0, ',', '.'))->sortable(),
             TextColumn::make('browser_compatible')->label('MP4-Wiedergabe')->formatStateUsing(fn ($state) => $state ? 'Kompatibel' : 'Format prüfen'),
-        ])->filters([SelectFilter::make('album')->relationship('album', 'name')->searchable()->preload()])->defaultSort('created_at', 'desc')->recordActions([
+        ])->filters([SelectFilter::make('album')->relationship('album', 'name')->searchable()->preload()])->defaultSort(fn (Builder $query): Builder => $query->byRecordingDate())->recordActions([
             Action::make('watch')->label('Ansehen')->url(fn (Video $record) => route('videos.show', $record))->icon('heroicon-o-play'),
             EditAction::make(), DeleteAction::make()->requiresConfirmation()->modalDescription('Das Video ist sofort nicht mehr verfügbar. Das Original bleibt erhalten, bis gelöschte Videos ausdrücklich auf dem Server bereinigt werden.'),
         ]);

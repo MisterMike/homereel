@@ -13,6 +13,10 @@ return [
     'boolean' => 'Das Feld :attribute muss wahr oder falsch sein.',
     'regex' => 'Das Format von :attribute ist ungültig.',
     'not_regex' => 'Das Format von :attribute ist ungültig.',
+    'date' => 'Das Feld :attribute muss ein gültiges Datum sein.',
+    'date_format' => 'Das Feld :attribute muss dem Format :format entsprechen.',
+    'before_or_equal' => 'Das Feld :attribute muss am oder vor dem :date liegen.',
+    'after_or_equal' => 'Das Feld :attribute muss am oder nach dem :date liegen.',
     'max' => [
         'string' => ':attribute darf höchstens :max Zeichen enthalten.',
         'numeric' => ':attribute darf höchstens :max sein.',
@@ -30,6 +34,7 @@ return [
         'password' => 'Passwort',
         'name' => 'Name',
         'title' => 'Titel',
+        'recorded_on' => 'Aufnahmedatum',
         'description' => 'Beschreibung',
         'role' => 'Rolle',
         'is_active' => 'Zugang',

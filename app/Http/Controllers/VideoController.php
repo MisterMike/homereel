@@ -25,7 +25,7 @@ class VideoController extends Controller
             ->when($album, fn (Builder $query): Builder => $query->where('album_id', $album->id))
             ->when($search !== '', fn (Builder $query): Builder => $query->where(function (Builder $query) use ($search): void {
                 $query->whereLike('title', '%'.$search.'%')->orWhereLike('description', '%'.$search.'%');
-            }))->latest()->paginate(24)->withQueryString();
+            }))->byRecordingDate()->paginate(24)->withQueryString();
 
         return view('videos.index', compact('videos', 'album', 'search'));
     }
