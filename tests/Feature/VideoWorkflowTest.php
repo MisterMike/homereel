@@ -85,7 +85,7 @@ class VideoWorkflowTest extends TestCase
         for ($n = 0; $n < 6; $n++) {
             $response = $this->postJson('/login', ['email' => $user->email, 'password' => 'wrong']);
         }
-        $response->assertUnprocessable()->assertSee('Too many attempts');
+        $response->assertUnprocessable()->assertSee('Zu viele Versuche');
         $this->get('/register')->assertNotFound();
     }
 
@@ -99,7 +99,7 @@ class VideoWorkflowTest extends TestCase
         }
         $this->postJson('/uploads')->assertForbidden();
         $this->get('/')->assertOk()->assertSee('Shared day')->assertDontSee('Family day')
-            ->assertSee('A moment to revisit')
+            ->assertSee('Ein Moment zum Wiedererleben')
             ->assertSee(route('videos.thumbnail', $available), false)
             ->assertDontSee(route('videos.thumbnail', $private), false)
             ->assertDontSee(route('filament.admin.pages.upload-video'), false);

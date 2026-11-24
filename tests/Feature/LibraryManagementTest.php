@@ -61,7 +61,7 @@ class LibraryManagementTest extends TestCase
         $this->assertFalse($user->canUploadVideos());
         Notification::assertSentTo($user, LibraryInvitation::class);
         $this->assertArrayNotHasKey('invitation_token', $user->toArray());
-        $this->get('/admin/users')->assertOk()->assertSee('one shared library');
+        $this->get('/admin/users')->assertOk()->assertSee('einer gemeinsamen Mediathek');
     }
 
     public function test_invitation_sets_a_password_and_cannot_be_replayed(): void
@@ -113,7 +113,7 @@ class LibraryManagementTest extends TestCase
         $this->actingAs($owner);
 
         $this->postJson('/uploads', ['filename' => 'day.mp4', 'title' => 'A day', 'size' => 10, 'mime_type' => 'video/mp4'])->assertCreated();
-        $this->get('/admin/upload-video')->assertOk()->assertSee('Upload another video');
+        $this->get('/admin/upload-video')->assertOk()->assertSee('Weiteres Video hochladen');
         Livewire::test(ListVideos::class)->assertCanSeeTableRecords([$own])->assertCanNotSeeTableRecords([$other]);
         Livewire::test(EditVideo::class, ['record' => $own->uuid])->fillForm(['title' => 'Updated by contributor', 'album_id' => $album->id, 'prototype_available' => true])->call('save')->assertHasNoFormErrors();
 
@@ -255,7 +255,7 @@ class LibraryManagementTest extends TestCase
 
         $this->get('/?q=mountain')->assertOk()->assertSee('Mountain walk')->assertSee('A day outside')->assertDontSee('Private footage');
         $this->get('/?q=mountain&album='.$album->id)->assertOk()->assertSee('Mountain walk')->assertDontSee('A day outside')->assertDontSee('Private footage');
-        $this->get('/?q=unmatched')->assertOk()->assertSee('No matching videos.')->assertDontSee('Upload your first video');
+        $this->get('/?q=unmatched')->assertOk()->assertSee('Keine passenden Videos gefunden.')->assertDontSee('Lade dein erstes Video hoch');
         $this->get('/?q[]=invalid')->assertSessionHasErrors('q');
     }
 
@@ -269,7 +269,7 @@ class LibraryManagementTest extends TestCase
         $this->video($admin, ['album_id' => $privateAlbum->id]);
         $this->actingAs(User::factory()->create());
 
-        $response = $this->get('/?album='.$album->id)->assertOk()->assertSee('Shared adventures')->assertDontSee('Hidden album')->assertDontSee('Manage people');
+        $response = $this->get('/?album='.$album->id)->assertOk()->assertSee('Shared adventures')->assertDontSee('Hidden album')->assertDontSee('Personen verwalten');
         $document = new \DOMDocument;
         @$document->loadHTML($response->getContent());
         $links = (new \DOMXPath($document))->query('//aside//a[@aria-current="page"]');

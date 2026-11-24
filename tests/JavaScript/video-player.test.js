@@ -47,6 +47,6 @@ test('autoplay denial gives a recovery message without marking the stream as fai
     const { instance } = player({ rejectPlay: true });
     instance.switchQuality('original');
     await instance.restorePlayback();
-    assert.match(instance.playbackMessage, /Press play/);
+    assert.match(instance.playbackMessage, /Drücke auf Wiedergabe/);
     assert.equal(instance.failed, false);
 });

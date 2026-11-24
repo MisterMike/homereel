@@ -43,7 +43,7 @@ class OptimizeVideo implements ShouldQueue
                         return false;
                     }
                     if ($video->trashed() || $video->status !== VideoStatus::Ready || ! app(ConversionSettings::class)->enabled()) {
-                        $video->update(['optimization_status' => 'failed', 'optimization_reserved_bytes' => 0, 'optimization_error' => 'Optimization was cancelled. The original is retained.']);
+                        $video->update(['optimization_status' => 'failed', 'optimization_reserved_bytes' => 0, 'optimization_error' => 'Die Optimierung wurde abgebrochen. Das Original bleibt erhalten.']);
 
                         return false;
                     }
@@ -95,7 +95,7 @@ class OptimizeVideo implements ShouldQueue
         }
         $optimizer = app(VideoOptimizer::class);
         Storage::disk(config('video.disk'))->delete([$optimizer->temporaryPath($video, $this->token), $optimizer->finalPath($video, $this->token)]);
-        $video->update(['optimization_status' => 'failed', 'optimization_reserved_bytes' => 0, 'optimization_error' => 'MP4 optimization failed. The original is retained and remains available. Check the private log before retrying.']);
+        $video->update(['optimization_status' => 'failed', 'optimization_reserved_bytes' => 0, 'optimization_error' => 'Die MP4-Optimierung ist fehlgeschlagen. Das Original bleibt erhalten und verfügbar. Prüfe vor einem neuen Versuch das private Protokoll.']);
         Log::warning('MP4 optimization failed', ['video' => $video->id, 'exception' => $exception]);
     }
 }

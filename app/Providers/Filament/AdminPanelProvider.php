@@ -35,10 +35,10 @@ class AdminPanelProvider extends PanelProvider
             ->brandName('HomeReel')
             ->defaultAvatarProvider(PrivateAvatar::class)
             ->navigationItems([
-                NavigationItem::make('Video library')->icon('heroicon-o-arrow-top-right-on-square')->url(fn (): string => route('videos.index'))->sort(99),
+                NavigationItem::make('Video-Mediathek')->icon('heroicon-o-arrow-top-right-on-square')->url(fn (): string => route('videos.index'))->sort(99),
             ])
             ->userMenuItems([
-                Action::make('videoLibrary')->label('View video library')->icon('heroicon-o-home')->url(fn (): string => route('videos.index')),
+                Action::make('videoLibrary')->label('Video-Mediathek öffnen')->icon('heroicon-o-home')->url(fn (): string => route('videos.index')),
             ])
             ->colors([
                 'primary' => Color::Teal,

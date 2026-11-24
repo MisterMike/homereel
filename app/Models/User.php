@@ -36,7 +36,7 @@ class User extends Authenticatable implements FilamentUser
     /** @return array<string, string> */
     public static function roles(): array
     {
-        return ['viewer' => 'Viewer', 'contributor' => 'Contributor', 'administrator' => 'Administrator'];
+        return ['viewer' => 'Zuschauer', 'contributor' => 'Mitwirkender', 'administrator' => 'Administrator'];
     }
 
     public function canAccessPanel(Panel $panel): bool

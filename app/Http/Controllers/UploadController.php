@@ -18,7 +18,7 @@ class UploadController extends Controller
             'title' => ['required', 'string', 'max:255'], 'size' => ['required', 'integer', 'min:1', 'max:'.config('video.max_bytes')],
             'mime_type' => ['required', Rule::in(config('video.mime_types'))],
         ]);
-        abort_unless(in_array(strtolower(pathinfo($data['filename'], PATHINFO_EXTENSION)), config('video.extensions'), true), 422, 'Unsupported file extension.');
+        abort_unless(in_array(strtolower(pathinfo($data['filename'], PATHINFO_EXTENSION)), config('video.extensions'), true), 422, 'Nicht unterstützte Dateiendung.');
 
         return response()->json($this->payload($uploads->create($request->user(), $data)), 201);
     }

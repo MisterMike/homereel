@@ -15,7 +15,7 @@ class MediaLock
             throw new \RuntimeException('Cannot open media lock.');
         }
         try {
-            abort_unless(flock($handle, LOCK_EX | ($wait ? 0 : LOCK_NB)), 409, 'This media is busy. Retry shortly.');
+            abort_unless(flock($handle, LOCK_EX | ($wait ? 0 : LOCK_NB)), 409, 'Diese Mediendatei wird gerade verarbeitet. Versuche es gleich erneut.');
 
             return $callback();
         } finally {

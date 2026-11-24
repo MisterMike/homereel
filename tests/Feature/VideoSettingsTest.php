@@ -70,7 +70,7 @@ class VideoSettingsTest extends TestCase
     public function test_admin_can_enable_conversion_and_automatic_upload_processing(): void
     {
         $this->admin();
-        $this->get('/admin/video-settings')->assertOk()->assertSee('Enable MP4 conversion');
+        $this->get('/admin/video-settings')->assertOk()->assertSee('MP4-Konvertierung aktivieren');
         Livewire::test(VideoSettings::class)
             ->set('data.enabled', true)->set('data.automatic', true)->call('save')->assertHasNoErrors();
         $this->assertDatabaseHas('video_conversion_settings', ['id' => 1, 'enabled' => true, 'automatic' => true]);

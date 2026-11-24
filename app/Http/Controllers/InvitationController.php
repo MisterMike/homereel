@@ -36,6 +36,6 @@ class InvitationController extends Controller
 
     private function assertValid(User $user, string $token): void
     {
-        abort_unless($user->is_active && $user->invitation_token !== null && $user->invitation_expires_at?->isFuture() && hash_equals($user->invitation_token, hash('sha256', $token)), 410, 'This invitation is invalid or expired. Ask your administrator to resend it.');
+        abort_unless($user->is_active && $user->invitation_token !== null && $user->invitation_expires_at?->isFuture() && hash_equals($user->invitation_token, hash('sha256', $token)), 410, 'Diese Einladung ist ungültig oder abgelaufen. Bitte die Person, die eure Mediathek verwaltet, sie erneut zu senden.');
     }
 }

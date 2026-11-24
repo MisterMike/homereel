@@ -13,10 +13,10 @@ class LocalDelivery implements VideoDelivery
 {
     public function stream(Video $video, Request $request): Response
     {
-        abort_unless($video->status === VideoStatus::Ready, 409, 'Video is not ready.');
+        abort_unless($video->status === VideoStatus::Ready, 409, 'Das Video ist noch nicht bereit.');
 
         $quality = $request->query('quality', 'auto');
-        abort_unless(in_array($quality, ['auto', 'original', 'optimized'], true), 422, 'Unknown playback quality.');
+        abort_unless(in_array($quality, ['auto', 'original', 'optimized'], true), 422, 'Unbekannte Wiedergabequalität.');
         abort_if($quality === 'optimized' && ! $video->hasOptimizedCopy(), 404);
         if ($quality !== 'original' && $video->hasOptimizedCopy()) {
             return $this->deliver($video->optimized_path, 'video/mp4', $request);

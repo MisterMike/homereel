@@ -4,7 +4,7 @@
         <div class="video-card-image">
             <x-video.thumbnail :video="$video" />
             @if($video->duration_seconds !== null)<span class="video-duration">{{ $video->duration_label }}</span>@endif
-            @if($video->status !== \App\Enums\VideoStatus::Ready)<span class="video-status" data-status="{{ $video->status->value }}">{{ ucfirst($video->status->value) }}</span>@endif
+            @if($video->status !== \App\Enums\VideoStatus::Ready)<span class="video-status" data-status="{{ $video->status->value }}">{{ __('statuses.'.$video->status->value) }}</span>@endif
         </div>
         <h3>{{ $video->title }}</h3>
         <x-video.metadata :video="$video" />

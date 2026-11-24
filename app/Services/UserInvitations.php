@@ -36,7 +36,7 @@ class UserInvitations
         Gate::forUser($actor)->authorize('update', $user);
         DB::transaction(function () use ($user): void {
             $user = User::lockForUpdate()->findOrFail($user->id);
-            abort_unless($user->is_active && $user->invitation_token !== null, 409, 'Only active pending invitations can be resent.');
+            abort_unless($user->is_active && $user->invitation_token !== null, 409, 'Nur aktive, offene Einladungen können erneut gesendet werden.');
             $this->send($user);
         });
     }

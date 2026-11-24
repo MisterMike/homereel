@@ -70,7 +70,7 @@ class GenerateVideoThumbnail implements ShouldQueue
                 if ($newPath && ! $published) {
                     $disk->delete($newPath);
                 }
-                Video::whereKey($video->id)->where('thumbnail_offset_seconds', $video->thumbnail_offset_seconds)->update(['thumbnail_error' => 'Preview generation failed. The previous preview and original are retained. Choose another time or try again.']);
+                Video::whereKey($video->id)->where('thumbnail_offset_seconds', $video->thumbnail_offset_seconds)->update(['thumbnail_error' => 'Das Vorschaubild konnte nicht erstellt werden. Das bisherige Vorschaubild und das Original bleiben erhalten. Wähle einen anderen Zeitpunkt oder versuche es erneut.']);
                 throw $exception;
             }
             if ($oldPath && $oldPath !== $newPath) {
@@ -85,6 +85,6 @@ class GenerateVideoThumbnail implements ShouldQueue
 
     public function failed(?\Throwable $exception): void
     {
-        Video::whereKey($this->videoId)->update(['thumbnail_error' => 'Preview generation exhausted its retries. The previous preview and original are retained. Try generating it again.']);
+        Video::whereKey($this->videoId)->update(['thumbnail_error' => 'Das Vorschaubild konnte auch nach mehreren Versuchen nicht erstellt werden. Das bisherige Vorschaubild und das Original bleiben erhalten. Versuche es erneut.']);
     }
 }

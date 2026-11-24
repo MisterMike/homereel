@@ -17,20 +17,20 @@ class ManageUsers extends ManageRecords
 
     public function getSubheading(): ?string
     {
-        return 'Everyone belongs to one shared library. Invite people, choose their role, or disable access.';
+        return 'Alle gehören zu einer gemeinsamen Mediathek. Lade Personen ein, wähle ihre Rolle oder deaktiviere ihren Zugang.';
     }
 
     protected function getHeaderActions(): array
     {
         return [
-            Action::make('inviteUser')->label('Invite user')->schema([
+            Action::make('inviteUser')->label('Person einladen')->schema([
                 TextInput::make('name')->required()->maxLength(255),
-                TextInput::make('email')->email()->required()->maxLength(255)->unique(User::class, 'email'),
-                Select::make('role')->options(User::roles())->default('viewer')->required()
-                    ->helperText('Viewers watch shared videos. Contributors manage their own uploads. Administrators manage all videos, albums and users.'),
+                TextInput::make('email')->label('E-Mail-Adresse')->email()->required()->maxLength(255)->unique(User::class, 'email'),
+                Select::make('role')->label('Rolle')->options(User::roles())->default('viewer')->required()
+                    ->helperText('Zuschauer sehen freigegebene Videos. Mitwirkende verwalten ihre eigenen Uploads. Administratoren verwalten alle Videos, Alben und Personen.'),
             ])->action(function (array $data): void {
                 app(UserInvitations::class)->invite(auth()->user(), $data);
-                Notification::make()->title('Invitation queued')->body('An email with a seven-day invitation link will be sent.')->success()->send();
+                Notification::make()->title('Einladung vorgemerkt')->body('Eine E-Mail mit einem sieben Tage gültigen Einladungslink wird versendet.')->success()->send();
             }),
         ];
     }

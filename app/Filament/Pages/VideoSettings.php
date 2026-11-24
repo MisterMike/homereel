@@ -15,7 +15,7 @@ class VideoSettings extends Page
 {
     protected string $view = 'filament.pages.video-settings';
 
-    protected static ?string $title = 'Video settings';
+    protected static ?string $title = 'Videoeinstellungen';
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-cog-6-tooth';
 
@@ -37,14 +37,14 @@ class VideoSettings extends Page
     public function settingsForm(Schema $schema): Schema
     {
         return $schema->components([
-            Section::make('MP4 conversion')
-                ->description('Create a separate optimized copy for smoother playback. Originals and existing optimized copies are kept when conversion is disabled.')
+            Section::make('MP4-Konvertierung')
+                ->description('Erstelle eine separate optimierte Kopie für eine flüssigere Wiedergabe. Originale und vorhandene optimierte Kopien bleiben beim Deaktivieren erhalten.')
                 ->schema([
-                    Toggle::make('enabled')->label('Enable MP4 conversion')->rules(['required', 'boolean'])->live()
-                        ->helperText('Requires a running conversion worker. Enable only where your host permits sustained FFmpeg CPU usage. Turning this off lets active conversions finish; queued conversions are cancelled when the worker checks them.'),
-                    Toggle::make('automatic')->label('Automatically convert new uploads')->rules(['required', 'boolean'])
+                    Toggle::make('enabled')->label('MP4-Konvertierung aktivieren')->rules(['required', 'boolean'])->live()
+                        ->helperText('Erfordert einen laufenden Konvertierungs-Worker. Aktiviere dies nur, wenn dein Hoster eine längere CPU-Nutzung durch FFmpeg erlaubt. Beim Deaktivieren werden laufende Konvertierungen abgeschlossen; wartende Aufträge werden bei der nächsten Prüfung abgebrochen.'),
+                    Toggle::make('automatic')->label('Neue Uploads automatisch konvertieren')->rules(['required', 'boolean'])
                         ->disabled(fn (Get $get): bool => ! $get('enabled'))->dehydrated()
-                        ->helperText('Queue an optimized MP4 after each new upload is inspected. Existing videos can be converted individually from their edit page.'),
+                        ->helperText('Nach der Prüfung jedes neuen Uploads wird eine optimierte MP4-Kopie eingeplant. Bestehende Videos können einzeln auf ihrer Bearbeitungsseite konvertiert werden.'),
                 ]),
         ])->statePath('data');
     }
@@ -55,6 +55,6 @@ class VideoSettings extends Page
         $data = $this->settingsForm->getState();
         app(ConversionSettings::class)->save((bool) $data['enabled'], (bool) $data['automatic']);
         $this->settingsForm->fill(app(ConversionSettings::class)->values());
-        Notification::make()->title('Video settings saved')->success()->send();
+        Notification::make()->title('Videoeinstellungen gespeichert')->success()->send();
     }
 }

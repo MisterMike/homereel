@@ -20,13 +20,17 @@ class AlbumResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
+    protected static ?string $modelLabel = 'Album';
+
+    protected static ?string $pluralModelLabel = 'Alben';
+
     protected static ?string $recordTitleAttribute = 'name';
 
     public static function form(Schema $schema): Schema
     {
         return $schema
             ->components([
-                TextInput::make('name')
+                TextInput::make('name')->label('Name')
                     ->required()
                     ->maxLength(255)->unique(ignoreRecord: true),
             ]);
@@ -37,13 +41,13 @@ class AlbumResource extends Resource
         return $table
             ->recordTitleAttribute('name')
             ->columns([
-                TextColumn::make('name')
+                TextColumn::make('name')->label('Name')
                     ->searchable()->sortable(),
                 TextColumn::make('videos_count')->counts('videos')->label('Videos'),
             ])
             ->recordActions([
                 EditAction::make(),
-                DeleteAction::make()->modalDescription('Videos in this album stay in the library without an album.'),
+                DeleteAction::make()->modalDescription('Videos aus diesem Album bleiben ohne Album in der Mediathek erhalten.'),
             ]);
     }
 

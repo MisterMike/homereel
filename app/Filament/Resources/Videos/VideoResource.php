@@ -27,6 +27,10 @@ class VideoResource extends Resource
 {
     protected static ?string $model = Video::class;
 
+    protected static ?string $modelLabel = 'Video';
+
+    protected static ?string $pluralModelLabel = 'Videos';
+
     protected static ?string $recordTitleAttribute = 'title';
 
     public static function getEloquentQuery(): Builder
@@ -42,27 +46,27 @@ class VideoResource extends Resource
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
-            TextInput::make('title')->required()->maxLength(255),
-            Select::make('album_id')->relationship('album', 'name')->searchable()->preload()->exists('albums', 'id')->label('Album')->placeholder('No album'),
-            Textarea::make('description')->maxLength(10000)->columnSpanFull(),
-            Toggle::make('prototype_available')->label('Available to family members')->helperText('Members can watch this video once processing finishes.'),
-            Section::make('Optimized playback')->columnSpanFull()->schema([
-                TextEntry::make('optimization_status')->label('MP4 copy')->formatStateUsing(fn (?string $state): string => ucfirst(str_replace('_', ' ', $state ?? 'not_requested'))),
-                TextEntry::make('optimized_file_size')->label('Optimized size')->formatStateUsing(fn ($state): string => number_format($state / 1048576, 1).' MiB')->placeholder('No copy yet'),
-                TextEntry::make('optimization_error')->label('Optimization')->color('danger')->visible(fn (?Video $record): bool => filled($record?->optimization_error)),
-            ])->description('A separate H.264/AAC MP4 up to 720p. The player offers Optimized and Original once it is ready.'),
-            Section::make('Preview thumbnail')->columnSpanFull()->schema([
-                ImageEntry::make('thumbnail_preview')->label('Current preview')
+            TextInput::make('title')->label('Titel')->required()->maxLength(255),
+            Select::make('album_id')->relationship('album', 'name')->searchable()->preload()->exists('albums', 'id')->label('Album')->placeholder('Kein Album'),
+            Textarea::make('description')->label('Beschreibung')->maxLength(10000)->columnSpanFull(),
+            Toggle::make('prototype_available')->label('Für Familienmitglieder verfügbar')->helperText('Familienmitglieder können dieses Video nach der Verarbeitung ansehen.'),
+            Section::make('Optimierte Wiedergabe')->columnSpanFull()->schema([
+                TextEntry::make('optimization_status')->label('MP4-Kopie')->formatStateUsing(fn (?string $state): string => __('statuses.'.($state ?? 'not_requested'))),
+                TextEntry::make('optimized_file_size')->label('Grösse der optimierten Kopie')->formatStateUsing(fn ($state): string => number_format($state / 1048576, 1, ',', '.').' MiB')->placeholder('Noch keine Kopie'),
+                TextEntry::make('optimization_error')->label('Optimierung')->color('danger')->visible(fn (?Video $record): bool => filled($record?->optimization_error)),
+            ])->description('Eine separate H.264/AAC-MP4-Datei mit bis zu 720p. Sobald sie bereit ist, bietet der Player die Auswahl zwischen optimierter Version und Original.'),
+            Section::make('Vorschaubild')->columnSpanFull()->schema([
+                ImageEntry::make('thumbnail_preview')->label('Aktuelles Vorschaubild')
                     ->state(fn (?Video $record): ?string => $record?->thumbnail_path ? route('videos.thumbnail', $record) : null)
-                    ->imageWidth(320)->imageHeight(180)->extraImgAttributes(['style' => 'max-width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover;'])->placeholder('No preview generated yet.'),
-                TextInput::make('thumbnail_offset_seconds')->label('Thumbnail time (seconds)')
+                    ->imageWidth(320)->imageHeight(180)->extraImgAttributes(['style' => 'max-width: 100%; height: auto; aspect-ratio: 16/9; object-fit: cover;'])->placeholder('Noch kein Vorschaubild erstellt.'),
+                TextInput::make('thumbnail_offset_seconds')->label('Zeitpunkt des Vorschaubilds (Sekunden)')
                     ->numeric()->step(0.1)->minValue(0)
                     ->maxValue(fn (?Video $record): ?float => $record?->duration_seconds ? max(0, $record->duration_seconds - 0.001) : null)
                     ->disabled(fn (?Video $record): bool => ! config('video.thumbnails') || $record?->status !== VideoStatus::Ready)
                     ->helperText(fn (): string => config('video.thumbnails')
-                        ? 'Leave empty for automatic selection: 5 seconds, or one third of a short clip. Saving a changed time queues a new preview. Refresh after processing to see it.'
-                        : 'Thumbnail generation is disabled on this server.'),
-                TextEntry::make('thumbnail_error')->label('Preview generation')->color('danger')
+                        ? 'Für automatische Auswahl leer lassen: 5 Sekunden oder ein Drittel eines kurzen Clips. Ein geänderter Zeitpunkt plant ein neues Vorschaubild ein. Lade die Seite nach der Verarbeitung neu.'
+                        : 'Die Erstellung von Vorschaubildern ist auf diesem Server deaktiviert.'),
+                TextEntry::make('thumbnail_error')->label('Vorschaubilderstellung')->color('danger')
                     ->visible(fn (?Video $record): bool => filled($record?->thumbnail_error)),
             ]),
         ]);
@@ -71,14 +75,14 @@ class VideoResource extends Resource
     public static function table(Table $table): Table
     {
         return $table->columns([
-            TextColumn::make('title')->searchable(), TextColumn::make('album.name')->placeholder('No album')->sortable(), TextColumn::make('created_at')->label('Uploaded')->dateTime()->sortable(),
-            TextColumn::make('file_size')->label('Size')->formatStateUsing(fn ($state) => number_format($state / 1048576, 1).' MiB'),
-            TextColumn::make('optimization_status')->label('MP4 copy')->badge(),
-            TextColumn::make('duration_label')->label('Duration'), TextColumn::make('status')->badge(),
-            TextColumn::make('browser_compatible')->label('MP4 playback')->formatStateUsing(fn ($state) => $state ? 'Compatible' : 'Check format'),
+            TextColumn::make('title')->label('Titel')->searchable(), TextColumn::make('album.name')->label('Album')->placeholder('Kein Album')->sortable(), TextColumn::make('created_at')->label('Hochgeladen')->dateTime('d.m.Y H:i')->sortable(),
+            TextColumn::make('file_size')->label('Grösse')->formatStateUsing(fn ($state) => number_format($state / 1048576, 1, ',', '.').' MiB'),
+            TextColumn::make('optimization_status')->label('MP4-Kopie')->formatStateUsing(fn (?string $state): string => __('statuses.'.($state ?? 'not_requested')))->badge(),
+            TextColumn::make('duration_label')->label('Dauer'), TextColumn::make('status')->formatStateUsing(fn (VideoStatus $state): string => __('statuses.'.$state->value))->badge(),
+            TextColumn::make('browser_compatible')->label('MP4-Wiedergabe')->formatStateUsing(fn ($state) => $state ? 'Kompatibel' : 'Format prüfen'),
         ])->filters([SelectFilter::make('album')->relationship('album', 'name')->searchable()->preload()])->defaultSort('created_at', 'desc')->recordActions([
-            Action::make('watch')->url(fn (Video $record) => route('videos.show', $record))->icon('heroicon-o-play'),
-            EditAction::make(), DeleteAction::make()->requiresConfirmation()->modalDescription('The video becomes unavailable immediately. Its original is retained until an operator explicitly purges deleted videos.'),
+            Action::make('watch')->label('Ansehen')->url(fn (Video $record) => route('videos.show', $record))->icon('heroicon-o-play'),
+            EditAction::make(), DeleteAction::make()->requiresConfirmation()->modalDescription('Das Video ist sofort nicht mehr verfügbar. Das Original bleibt erhalten, bis gelöschte Videos ausdrücklich auf dem Server bereinigt werden.'),
         ]);
     }
 

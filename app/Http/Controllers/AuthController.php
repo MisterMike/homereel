@@ -22,11 +22,11 @@ class AuthController extends Controller
         $data = $request->validate(['email' => ['required', 'email', 'max:255'], 'password' => ['required', 'string', 'max:4096']]);
         $key = 'login:'.Str::lower($data['email']).'|'.$request->ip();
         if (RateLimiter::tooManyAttempts($key, 5)) {
-            throw ValidationException::withMessages(['email' => 'Too many attempts. Try again in '.RateLimiter::availableIn($key).' seconds.']);
+            throw ValidationException::withMessages(['email' => 'Zu viele Versuche. Versuche es in '.RateLimiter::availableIn($key).' Sekunden erneut.']);
         }
         if (! Auth::attempt([...$data, 'is_active' => true, 'invitation_token' => null])) {
             RateLimiter::hit($key, 60);
-            throw ValidationException::withMessages(['email' => 'The email or password is incorrect.']);
+            throw ValidationException::withMessages(['email' => 'Die E-Mail-Adresse oder das Passwort ist falsch.']);
         }
         RateLimiter::clear($key);
         $request->session()->regenerate();

@@ -2,7 +2,7 @@
     <form wire:submit="save" class="space-y-6">
         {{ $this->settingsForm }}
         <x-filament::button type="submit" wire:loading.attr="disabled" wire:target="save">
-            Save settings
+            Einstellungen speichern
         </x-filament::button>
     </form>
 </x-filament-panels::page>

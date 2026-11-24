@@ -120,7 +120,7 @@ class VideoOptimizationTest extends TestCase
         $path = $video->optimized_path;
         $this->runJob($video);
         $this->assertSame($path, $video->fresh()->optimized_path);
-        $this->get(route('videos.show', $video))->assertOk()->assertSee('Playback quality')->assertSee('Optimized');
+        $this->get(route('videos.show', $video))->assertOk()->assertSee('Wiedergabequalität')->assertSee('Optimiert');
     }
 
     public function test_failed_conversion_keeps_playable_original_and_releases_space(): void

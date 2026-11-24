@@ -24,10 +24,10 @@ class UserManagement
             $administrators = User::where('is_admin', true)->orderBy('id')->lockForUpdate()->get();
             $user = User::lockForUpdate()->findOrFail($user->id);
             if ($actor->id === $user->id && ($data['role'] !== 'administrator' || ! $data['is_active'])) {
-                throw ValidationException::withMessages(['role' => 'You cannot remove your own administrator access. Ask another administrator.']);
+                throw ValidationException::withMessages(['role' => 'Du kannst deinen eigenen Administratorzugang nicht entfernen. Bitte einen anderen Administrator darum.']);
             }
             if ($user->is_admin && $user->is_active && ($data['role'] !== 'administrator' || ! $data['is_active']) && $administrators->where('is_active', true)->whereNull('invitation_token')->count() <= 1) {
-                throw ValidationException::withMessages(['role' => 'Keep at least one active administrator.']);
+                throw ValidationException::withMessages(['role' => 'Mindestens ein aktiver Administrator muss erhalten bleiben.']);
             }
             $user->forceFill([
                 'name' => $data['name'], 'is_active' => $data['is_active'],

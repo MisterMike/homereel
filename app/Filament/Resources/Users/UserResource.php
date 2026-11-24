@@ -23,30 +23,34 @@ class UserResource extends Resource
 {
     protected static ?string $model = User::class;
 
+    protected static ?string $modelLabel = 'Person';
+
+    protected static ?string $pluralModelLabel = 'Personen';
+
     protected static ?string $recordTitleAttribute = 'name';
 
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
-            TextInput::make('name')->required()->maxLength(255),
-            TextInput::make('email')->email()->disabled()->dehydrated(false),
-            Select::make('role')->options(User::roles())->required()
-                ->helperText('Viewers watch shared videos. Contributors also upload and manage their own videos. Administrators manage the whole library and users.'),
-            Toggle::make('is_active')->label('Access enabled')->required()
-                ->helperText('Disabling access also blocks existing sessions and pending invitations.'),
+            TextInput::make('name')->label('Name')->required()->maxLength(255),
+            TextInput::make('email')->label('E-Mail-Adresse')->email()->disabled()->dehydrated(false),
+            Select::make('role')->label('Rolle')->options(User::roles())->required()
+                ->helperText('Zuschauer sehen freigegebene Videos. Mitwirkende laden auch Videos hoch und verwalten ihre eigenen Videos. Administratoren verwalten die gesamte Mediathek und alle Personen.'),
+            Toggle::make('is_active')->label('Zugang aktiviert')->required()
+                ->helperText('Beim Deaktivieren werden auch bestehende Sitzungen und offene Einladungen gesperrt.'),
         ]);
     }
 
     public static function table(Table $table): Table
     {
         return $table->columns([
-            TextColumn::make('name')->searchable(),
-            TextColumn::make('email')->searchable(),
-            TextColumn::make('role')->formatStateUsing(fn (string $state): string => User::roles()[$state])->badge(),
-            TextColumn::make('is_active')->label('Access')->formatStateUsing(fn (bool $state): string => $state ? 'Enabled' : 'Disabled')->badge(),
-            TextColumn::make('invitation_status')->label('Invitation')->state(fn (User $record): string => $record->invitation_token === null ? 'Accepted / existing account' : ($record->invitation_expires_at?->isFuture() ? 'Pending' : 'Expired')),
+            TextColumn::make('name')->label('Name')->searchable(),
+            TextColumn::make('email')->label('E-Mail-Adresse')->searchable(),
+            TextColumn::make('role')->label('Rolle')->formatStateUsing(fn (string $state): string => User::roles()[$state])->badge(),
+            TextColumn::make('is_active')->label('Zugang')->formatStateUsing(fn (bool $state): string => $state ? 'Aktiviert' : 'Deaktiviert')->badge(),
+            TextColumn::make('invitation_status')->label('Einladung')->state(fn (User $record): string => $record->invitation_token === null ? 'Angenommen / bestehendes Konto' : ($record->invitation_expires_at?->isFuture() ? 'Offen' : 'Abgelaufen')),
         ])->filters([
-            SelectFilter::make('is_active')->label('Access')->options([1 => 'Enabled', 0 => 'Disabled']),
+            SelectFilter::make('is_active')->label('Zugang')->options([1 => 'Aktiviert', 0 => 'Deaktiviert']),
         ])->recordActions([
             EditAction::make()
                 ->mutateRecordDataUsing(fn (array $data, User $record): array => [...$data, 'role' => $record->role])
@@ -58,12 +62,12 @@ class UserResource extends Resource
                         throw ValidationException::withMessages(collect($exception->errors())->mapWithKeys(fn (array $messages, string $key): array => [$statePath.'.'.$key => $messages])->all());
                     }
                 }),
-            Action::make('resendInvitation')->label('Resend invitation')->requiresConfirmation()
+            Action::make('resendInvitation')->label('Einladung erneut senden')->requiresConfirmation()
                 ->visible(fn (User $record): bool => $record->is_active && $record->invitation_token !== null)
-                ->modalDescription('Send a new invitation valid for seven days. Previous invitation links will stop working.')
+                ->modalDescription('Sende eine neue Einladung, die sieben Tage gültig ist. Bisherige Einladungslinks werden ungültig.')
                 ->action(function (User $record): void {
                     app(UserInvitations::class)->resend(auth()->user(), $record);
-                    Notification::make()->title('Invitation queued')->body('The new invitation will be sent by email.')->success()->send();
+                    Notification::make()->title('Einladung vorgemerkt')->body('Die neue Einladung wird per E-Mail versendet.')->success()->send();
                 }),
         ]);
     }

@@ -41,25 +41,25 @@ class EditVideo extends EditRecord
     private function queueThumbnail(): void
     {
         Gate::authorize('update', $this->record);
-        abort_unless(config('video.thumbnails') && $this->record->status === VideoStatus::Ready, 409, 'Preview generation is not available.');
+        abort_unless(config('video.thumbnails') && $this->record->status === VideoStatus::Ready, 409, 'Die Erstellung von Vorschaubildern ist nicht verfügbar.');
         $this->record->update(['thumbnail_error' => null]);
         GenerateVideoThumbnail::dispatch($this->record->id)->afterCommit();
-        Notification::make()->title('Thumbnail generation queued')->body('The video stays playable. Refresh this page after processing to see the new preview.')->success()->send();
+        Notification::make()->title('Vorschaubilderstellung vorgemerkt')->body('Das Video bleibt abspielbar. Lade diese Seite nach der Verarbeitung neu, um das neue Vorschaubild zu sehen.')->success()->send();
     }
 
     protected function getHeaderActions(): array
     {
         return [
-            Action::make('optimize')->label(fn (): string => $this->record->optimization_status === 'failed' ? 'Retry MP4 optimization' : 'Create optimized MP4')->icon('heroicon-o-film')
+            Action::make('optimize')->label(fn (): string => $this->record->optimization_status === 'failed' ? 'MP4-Optimierung erneut versuchen' : 'Optimierte MP4 erstellen')->icon('heroicon-o-film')
                 ->visible(fn (): bool => app(ConversionSettings::class)->enabled() && ! $this->record->hasOptimizedCopy())
                 ->disabled(fn (): bool => $this->record->status !== VideoStatus::Ready || in_array($this->record->optimization_status, ['queued', 'processing'], true))
-                ->requiresConfirmation()->modalDescription('Create a private H.264/AAC MP4 up to 720p. The original stays intact and playable. Conversion may take several minutes.')
+                ->requiresConfirmation()->modalDescription('Erstelle eine private H.264/AAC-MP4-Datei mit bis zu 720p. Das Original bleibt erhalten und abspielbar. Die Konvertierung kann mehrere Minuten dauern.')
                 ->action(function (): void {
                     Gate::authorize('update', $this->record);
                     app(VideoOptimization::class)->queue($this->record);
-                    Notification::make()->title('MP4 optimization queued')->body('Refresh this page later to check its status.')->success()->send();
+                    Notification::make()->title('MP4-Optimierung vorgemerkt')->body('Lade diese Seite später neu, um den Status zu prüfen.')->success()->send();
                 }),
-            Action::make('regenerateThumbnail')->label('Generate thumbnail')->icon('heroicon-o-photo')
+            Action::make('regenerateThumbnail')->label('Vorschaubild erstellen')->icon('heroicon-o-photo')
                 ->disabled(fn (): bool => ! config('video.thumbnails') || $this->record->status !== VideoStatus::Ready)
                 ->action(function (): void {
                     $this->save(shouldRedirect: false, shouldSendSavedNotification: false);
@@ -67,12 +67,12 @@ class EditVideo extends EditRecord
                         $this->queueThumbnail();
                     }
                 }),
-            Action::make('reprocess')->label('Retry inspection')->visible(fn () => $this->record->status === VideoStatus::Failed)->requiresConfirmation()->action(function () {
+            Action::make('reprocess')->label('Prüfung erneut versuchen')->visible(fn () => $this->record->status === VideoStatus::Failed)->requiresConfirmation()->action(function () {
                 $this->record->update(['status' => VideoStatus::Processing, 'processing_error' => null]);
                 ProcessVideo::dispatch($this->record->id);
-                Notification::make()->title('Inspection queued')->success()->send();
+                Notification::make()->title('Prüfung vorgemerkt')->success()->send();
             }),
-            DeleteAction::make()->requiresConfirmation()->modalDescription('The original is retained until an explicit operator purge.'),
+            DeleteAction::make()->requiresConfirmation()->modalDescription('Das Original bleibt bis zur ausdrücklichen Bereinigung auf dem Server erhalten.'),
         ];
     }
 }

@@ -65,7 +65,7 @@ test('pause cancels a pending throttle wait without sending another request', as
     };
     const pending = upload.request('/uploads/session');
     await new Promise(resolve => setImmediate(resolve));
-    assert.match(upload.message, /Retrying automatically/);
+    assert.match(upload.message, /Automatischer Neuversuch/);
 
     upload.pause();
 
@@ -104,6 +104,6 @@ test('uploading another video clears the completed upload and returns focus to f
     assert.equal(upload.file, null);
     assert.equal(upload.title, '');
     assert.equal(upload.$refs.file.value, '');
-    assert.equal(upload.message, 'Select another video to upload.');
+    assert.equal(upload.message, 'Wähle ein weiteres Video zum Hochladen.');
     assert.equal(focused, true);
 });

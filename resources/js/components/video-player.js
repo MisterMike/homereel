@@ -34,12 +34,12 @@ export default function videoPlayer(options = {}) {
                 ? Math.min(playback.time, Math.max(0, video.duration - 0.1))
                 : playback.time;
             video.playbackRate = playback.rate;
-            this.playbackMessage = `Switched to ${this.quality === 'optimized' ? 'Optimized' : 'Original'}.`;
+            this.playbackMessage = `Gewechselt zu ${this.quality === 'optimized' ? 'Optimiert' : 'Original'}.`;
             if (playback.playing) {
                 try {
                     await video.play();
                 } catch {
-                    this.playbackMessage += ' Press play to continue.';
+                    this.playbackMessage += ' Drücke auf Wiedergabe, um fortzufahren.';
                 }
             }
         },

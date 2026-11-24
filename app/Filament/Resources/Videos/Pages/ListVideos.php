@@ -13,6 +13,6 @@ class ListVideos extends ListRecords
 
     protected function getHeaderActions(): array
     {
-        return [Action::make('upload')->label('Upload video')->url(UploadVideo::getUrl())];
+        return [Action::make('upload')->label('Video hochladen')->url(UploadVideo::getUrl())];
     }
 }

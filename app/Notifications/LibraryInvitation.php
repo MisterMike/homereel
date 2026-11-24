@@ -24,10 +24,10 @@ class LibraryInvitation extends Notification implements ShouldQueue
 
     public function toMail(object $notifiable): MailMessage
     {
-        return (new MailMessage)->subject('You’re invited to HomeReel')
-            ->greeting('Hello '.$notifiable->name.',')
-            ->line('You’ve been invited to your family’s private video library.')
-            ->action('Accept invitation', $this->url)
-            ->line('Choose your password to get started. This invitation expires in seven days.');
+        return (new MailMessage)->subject('Du bist zu HomeReel eingeladen')
+            ->greeting('Hallo '.$notifiable->name.',')
+            ->line('Du wurdest zur privaten Video-Mediathek deiner Familie eingeladen.')
+            ->action('Einladung annehmen', $this->url)
+            ->line('Wähle dein Passwort, um loszulegen. Diese Einladung läuft in sieben Tagen ab.');
     }
 }

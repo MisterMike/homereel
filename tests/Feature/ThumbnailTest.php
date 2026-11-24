@@ -175,6 +175,6 @@ class ThumbnailTest extends TestCase
     public function test_admin_navigation_links_to_the_authenticated_frontend(): void
     {
         $this->video();
-        $this->get('/admin')->assertOk()->assertSee('Video library')->assertSee(route('videos.index'), false);
+        $this->get('/admin')->assertOk()->assertSee('Video-Mediathek')->assertSee(route('videos.index'), false);
     }
 }

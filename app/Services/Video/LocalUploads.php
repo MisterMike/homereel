@@ -22,7 +22,7 @@ class LocalUploads implements ResumableUploads
         return $this->lock->run('quota', function () use ($user, $data) {
             // Include expired-but-not-cleaned reservations and soft-deleted originals.
             $used = app(VideoStorageBudget::class)->used();
-            abort_if($used + $data['size'] > config('video.storage_limit_bytes'), 422, 'Video storage allowance reached.');
+            abort_if($used + $data['size'] > config('video.storage_limit_bytes'), 422, 'Der Videospeicher ist voll.');
             $id = (string) Str::uuid();
 
             return UploadSession::create([
@@ -39,8 +39,8 @@ class LocalUploads implements ResumableUploads
         return $this->lock->run($upload->id, function () use ($upload, $offset, $length, $checksum, $input) {
             $upload->refresh();
             $this->assertActive($upload);
-            abort_unless($offset === $upload->offset, 409, 'Offset differs. Query the confirmed offset before retrying.');
-            abort_unless($length > 0 && $length <= $upload->chunk_bytes && $offset + $length <= $upload->expected_size, 422, 'Invalid chunk length.');
+            abort_unless($offset === $upload->offset, 409, 'Der Upload-Fortschritt weicht ab. Prüfe vor dem nächsten Versuch den bestätigten Fortschritt.');
+            abort_unless($length > 0 && $length <= $upload->chunk_bytes && $offset + $length <= $upload->expected_size, 422, 'Ungültige Blocklänge.');
             $disk = Storage::disk(config('video.disk'));
             $disk->makeDirectory('uploads');
             $file = fopen($disk->path($upload->temporary_path), 'c+b');
@@ -52,7 +52,7 @@ class LocalUploads implements ResumableUploads
                     throw new \RuntimeException('Cannot protect temporary upload.');
                 }
                 // A crash may leave uncommitted bytes. The DB offset is authoritative.
-                abort_if(fstat($file)['size'] < $offset, 409, 'Temporary file is incomplete; start a new upload.');
+                abort_if(fstat($file)['size'] < $offset, 409, 'Die temporäre Datei ist unvollständig. Starte einen neuen Upload.');
                 if (! ftruncate($file, $offset) || fseek($file, $offset) !== 0) {
                     throw new \RuntimeException('Cannot seek upload.');
                 }
@@ -67,7 +67,7 @@ class LocalUploads implements ResumableUploads
                         break;
                     }
                     $written += strlen($buffer);
-                    abort_if($written > $length, 422, 'Chunk exceeds declared length.');
+                    abort_if($written > $length, 422, 'Der Datenblock überschreitet die angegebene Länge.');
                     hash_update($hash, $buffer);
                     $remaining = $buffer;
                     while ($remaining !== '') {
@@ -78,7 +78,7 @@ class LocalUploads implements ResumableUploads
                         $remaining = substr($remaining, $n);
                     }
                 }
-                abort_unless($written === $length && hash_equals(strtolower($checksum), hash_final($hash)), 422, 'Chunk length or checksum mismatch.');
+                abort_unless($written === $length && hash_equals(strtolower($checksum), hash_final($hash)), 422, 'Blocklänge oder Prüfsumme stimmt nicht überein.');
                 if (! fflush($file) || ! fsync($file)) {
                     throw new \RuntimeException('Cannot flush upload.');
                 }
@@ -98,7 +98,7 @@ class LocalUploads implements ResumableUploads
 
     public function finish(UploadSession $upload): Video
     {
-        abort_unless(config('queue.default') === 'database' && in_array(config('queue.connections.database.connection'), [null, config('database.default')], true), 503, 'Processing requires the database queue on the application database.');
+        abort_unless(config('queue.default') === 'database' && in_array(config('queue.connections.database.connection'), [null, config('database.default')], true), 503, 'Die Verarbeitung erfordert die Datenbank-Warteschlange auf der Anwendungsdatenbank.');
 
         return $this->lock->run($upload->id, function () use ($upload) {
             $upload->refresh();
@@ -106,12 +106,12 @@ class LocalUploads implements ResumableUploads
                 return Video::findOrFail($upload->video_id);
             }
             $this->assertActive($upload);
-            abort_unless($upload->offset === $upload->expected_size, 409, 'Upload is not complete.');
+            abort_unless($upload->offset === $upload->expected_size, 409, 'Der Upload ist noch nicht vollständig.');
             $disk = Storage::disk(config('video.disk'));
             $original = 'originals/'.$upload->id;
             // A rename before a failed DB commit is recoverable by retrying finalization.
             $source = $disk->exists($original) ? $original : $upload->temporary_path;
-            abort_unless($disk->exists($source) && $disk->size($source) === $upload->expected_size, 422, 'Assembled size mismatch.');
+            abort_unless($disk->exists($source) && $disk->size($source) === $upload->expected_size, 422, 'Die Grösse der zusammengesetzten Datei stimmt nicht überein.');
             $handle = $disk->readStream($source);
             try {
                 $sample = fread($handle, 262144);
@@ -119,7 +119,7 @@ class LocalUploads implements ResumableUploads
                 fclose($handle);
             }
             $mime = (new \finfo(FILEINFO_MIME_TYPE))->buffer($sample);
-            abort_unless(in_array($mime, config('video.mime_types'), true), 422, 'Unsupported media content. Start again with MP4, MOV, WebM or MKV.');
+            abort_unless(in_array($mime, config('video.mime_types'), true), 422, 'Nicht unterstützter Medieninhalt. Starte erneut mit MP4, MOV, WebM oder MKV.');
             if ($source !== $original) {
                 $disk->move($source, $original);
             }
@@ -141,6 +141,6 @@ class LocalUploads implements ResumableUploads
 
     private function assertActive(UploadSession $upload): void
     {
-        abort_unless($upload->status === UploadStatus::Active && $upload->expires_at->isFuture(), 410, 'Upload expired or closed. Start a new upload.');
+        abort_unless($upload->status === UploadStatus::Active && $upload->expires_at->isFuture(), 410, 'Der Upload ist abgelaufen oder geschlossen. Starte einen neuen Upload.');
     }
 }

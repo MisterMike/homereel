@@ -51,7 +51,7 @@ class ProcessVideo implements ShouldQueue
                         $video->thumbnail_path = $inspector->thumbnail($video);
                         $video->thumbnail_error = null;
                     } catch (\Throwable $e) {
-                        $video->thumbnail_error = 'Preview generation failed. The video is still available; try generating another preview from its edit page.';
+                        $video->thumbnail_error = 'Das Vorschaubild konnte nicht erstellt werden. Das Video bleibt verfügbar. Versuche es auf der Bearbeitungsseite erneut.';
                         Log::warning('Thumbnail generation failed', ['video' => $video->id, 'exception' => $e]);
                     }
                 }
@@ -65,7 +65,7 @@ class ProcessVideo implements ShouldQueue
                     }
                 }
             } catch (\Throwable $e) {
-                $video->update(['status' => VideoStatus::Failed, 'processing_error' => 'Inspection failed. The original is retained. Check the private application log and retry processing.']);
+                $video->update(['status' => VideoStatus::Failed, 'processing_error' => 'Die Prüfung ist fehlgeschlagen. Das Original bleibt erhalten. Prüfe das private Anwendungsprotokoll und starte die Verarbeitung erneut.']);
                 throw $e;
             }
         });
@@ -80,6 +80,6 @@ class ProcessVideo implements ShouldQueue
 
     public function failed(?\Throwable $e): void
     {
-        Video::whereKey($this->videoId)->where('status', '!=', VideoStatus::Ready)->update(['status' => VideoStatus::Failed, 'processing_error' => 'Processing exhausted its retries. The original is retained.']);
+        Video::whereKey($this->videoId)->where('status', '!=', VideoStatus::Ready)->update(['status' => VideoStatus::Failed, 'processing_error' => 'Die Verarbeitung ist nach mehreren Versuchen fehlgeschlagen. Das Original bleibt erhalten.']);
     }
 }
