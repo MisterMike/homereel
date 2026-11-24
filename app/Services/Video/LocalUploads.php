@@ -129,6 +129,7 @@ class LocalUploads implements ResumableUploads
                     'uuid' => $upload->id, 'title' => $upload->title, 'original_filename' => $upload->original_filename,
                     'mime_type' => $mime, 'file_size' => $upload->expected_size, 'storage_provider' => 'local',
                     'storage_path' => $original, 'status' => VideoStatus::Processing, 'uploaded_by' => $upload->user_id,
+                    'prototype_available' => true,
                 ]);
                 $upload->update(['status' => UploadStatus::Completed, 'video_id' => $video->id]);
                 // Database queue insertion and video transition commit atomically on the same DB.

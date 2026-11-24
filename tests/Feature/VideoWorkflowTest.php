@@ -11,6 +11,8 @@ use App\Models\User;
 use App\Models\Video;
 use App\Services\Video\MediaLock;
 use App\Services\Video\VideoInspector;
+use Filament\Actions\Action;
+use Filament\Actions\Testing\TestAction;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
@@ -166,7 +168,11 @@ class VideoWorkflowTest extends TestCase
         $video = Video::firstOrFail();
         $this->assertSame($bytes, Storage::disk('videos')->get($video->storage_path));
         $this->assertSame(VideoStatus::Processing, $video->status);
-        $this->assertFalse($video->prototype_available);
+        $this->assertTrue($video->prototype_available);
+        $viewer = User::factory()->create();
+        $this->assertFalse($viewer->can('view', $video));
+        $video->update(['status' => VideoStatus::Ready]);
+        $this->assertTrue($viewer->can('view', $video));
         Queue::assertPushed(ProcessVideo::class, 1);
         $this->postJson('/uploads/'.$id.'/finish')->assertOk();
         $this->assertSame(1, Video::count());
@@ -289,20 +295,21 @@ class VideoWorkflowTest extends TestCase
         $this->postJson('/uploads', [])->assertStatus(419);
     }
 
-    public function test_administrator_can_edit_share_and_soft_delete_through_filament(): void
+    public function test_administrator_can_edit_unshare_and_soft_delete_through_filament(): void
     {
-        $video = $this->video();
+        $video = $this->video(['prototype_available' => true]);
         Storage::disk('videos')->put($video->storage_path, 'original');
         $this->actingAs($this->admin());
         Filament::setCurrentPanel(Filament::getPanel('admin'));
 
         $component = Livewire::test(EditVideo::class, ['record' => $video->uuid])
-            ->fillForm(['title' => 'Updated family video', 'description' => 'A family note.', 'prototype_available' => true])
+            ->assertActionExists('save', fn (Action $action): bool => $action->getFormId() === 'form' && $action->canSubmitForm())
+            ->fillForm(['title' => 'Updated family video', 'description' => 'A family note.', 'prototype_available' => false])
             ->call('save')
             ->assertHasNoFormErrors();
 
-        $this->assertDatabaseHas('videos', ['id' => $video->id, 'title' => 'Updated family video', 'description' => 'A family note.', 'prototype_available' => true]);
-        $component->callAction('delete');
+        $this->assertDatabaseHas('videos', ['id' => $video->id, 'title' => 'Updated family video', 'description' => 'A family note.', 'prototype_available' => false]);
+        $component->callAction(TestAction::make('delete')->schemaComponent('form-actions', schema: 'content'));
         $this->assertSoftDeleted($video);
         Storage::disk('videos')->assertExists($video->storage_path);
     }

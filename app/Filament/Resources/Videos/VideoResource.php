@@ -53,7 +53,7 @@ class VideoResource extends Resource
             TextInput::make('title')->label('Titel')->required()->maxLength(255),
             Select::make('album_id')->relationship('album', 'name')->searchable()->preload()->exists('albums', 'id')->label('Album')->placeholder('Kein Album'),
             Textarea::make('description')->label('Beschreibung')->maxLength(10000)->columnSpanFull(),
-            Toggle::make('prototype_available')->label('Für Familienmitglieder verfügbar')->helperText('Familienmitglieder können dieses Video nach der Verarbeitung ansehen.'),
+            Toggle::make('prototype_available')->label('Für Familienmitglieder verfügbar')->default(true)->helperText('Neue Uploads sind standardmässig nach der Verarbeitung für deine Familie verfügbar. Deaktiviere dies, um ein Video nur für dich und Administratoren sichtbar zu machen.'),
             Section::make('Optimierte Wiedergabe')->columnSpanFull()->schema([
                 TextEntry::make('optimization_status')->label('MP4-Kopie')->formatStateUsing(fn (?string $state): string => __('statuses.'.($state ?? 'not_requested'))),
                 TextEntry::make('optimized_file_size')->label('Grösse der optimierten Kopie')->formatStateUsing(fn ($state): string => number_format($state / 1048576, 1, ',', '.').' MiB')->placeholder('Noch keine Kopie'),
@@ -83,6 +83,7 @@ class VideoResource extends Resource
             TextColumn::make('file_size')->label('Grösse')->formatStateUsing(fn ($state) => number_format($state / 1048576, 1, ',', '.').' MiB'),
             TextColumn::make('optimization_status')->label('MP4-Kopie')->formatStateUsing(fn (?string $state): string => __('statuses.'.($state ?? 'not_requested')))->badge(),
             TextColumn::make('duration_label')->label('Dauer'), TextColumn::make('status')->formatStateUsing(fn (VideoStatus $state): string => __('statuses.'.$state->value))->badge(),
+            TextColumn::make('view_count')->label('Aufrufe')->formatStateUsing(fn (int $state): string => number_format($state, 0, ',', '.'))->sortable(),
             TextColumn::make('browser_compatible')->label('MP4-Wiedergabe')->formatStateUsing(fn ($state) => $state ? 'Kompatibel' : 'Format prüfen'),
         ])->filters([SelectFilter::make('album')->relationship('album', 'name')->searchable()->preload()])->defaultSort('created_at', 'desc')->recordActions([
             Action::make('watch')->label('Ansehen')->url(fn (Video $record) => route('videos.show', $record))->icon('heroicon-o-play'),

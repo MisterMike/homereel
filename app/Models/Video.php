@@ -12,13 +12,13 @@ class Video extends Model
 {
     use SoftDeletes;
 
-    protected $attributes = ['prototype_available' => false, 'browser_compatible' => false];
+    protected $attributes = ['prototype_available' => false, 'browser_compatible' => false, 'view_count' => 0];
 
     protected $guarded = ['id'];
 
     protected function casts(): array
     {
-        return ['status' => VideoStatus::class, 'prototype_available' => 'boolean', 'browser_compatible' => 'boolean', 'file_size' => 'integer', 'duration_seconds' => 'float', 'thumbnail_offset_seconds' => 'float', 'optimized_file_size' => 'integer', 'optimization_reserved_bytes' => 'integer'];
+        return ['status' => VideoStatus::class, 'prototype_available' => 'boolean', 'browser_compatible' => 'boolean', 'file_size' => 'integer', 'duration_seconds' => 'float', 'thumbnail_offset_seconds' => 'float', 'optimized_file_size' => 'integer', 'optimization_reserved_bytes' => 'integer', 'view_count' => 'integer'];
     }
 
     public function album(): BelongsTo

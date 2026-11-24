@@ -36,7 +36,7 @@
     </div>
     <section class="upload-complete" x-show="completedUrl" x-cloak aria-labelledby="upload-complete-heading">
         <h2 id="upload-complete-heading" tabindex="-1" x-ref="completeHeading">Dein Video wurde hochgeladen.</h2>
-        <p>Die Verarbeitung läuft im Hintergrund weiter. Unter «Videos verwalten» kannst du ein Album wählen und das fertige Video für deine Familie freigeben.</p>
+        <p>Die Verarbeitung läuft im Hintergrund weiter. Sobald dein Video bereit ist, kann deine Familie es ansehen. Unter «Videos verwalten» kannst du ein Album wählen oder die Freigabe deaktivieren.</p>
         <div class="upload-actions">
             <a class="hr-button" href="{{ route('filament.admin.resources.videos.index') }}">Videos verwalten</a>
             <a class="hr-button hr-button-secondary" href="{{ route('videos.index') }}">Alle Videos anzeigen</a>
@@ -45,6 +45,6 @@
     </section>
     <div class="upload-guidance">
         <x-ui.icon name="lock" />
-        <div><p>Dein Original bleibt privat. Du entscheidest, wann es für deine Familie verfügbar ist.</p><p>Lass diesen Tab während des Uploads geöffnet. Wähle nach dem Neuladen dieselbe Datei, um fortzufahren. Unvollständige Uploads verfallen nach {{ config('video.upload_hours') }} Stunden.</p><p>Für eine zuverlässige Wiedergabe verwende MP4 mit H.264-Video und AAC-Audio.</p></div>
+        <div><p>Dein Video ist nach der Verarbeitung automatisch für deine Familie verfügbar. Unter «Videos verwalten» kannst du die Freigabe deaktivieren. Der Zugang bleibt auf eure private Mediathek beschränkt.</p><p>Lass diesen Tab während des Uploads geöffnet. Wähle nach dem Neuladen dieselbe Datei, um fortzufahren. Unvollständige Uploads verfallen nach {{ config('video.upload_hours') }} Stunden.</p><p>Für eine zuverlässige Wiedergabe verwende MP4 mit H.264-Video und AAC-Audio.</p></div>
     </div>
 </section>

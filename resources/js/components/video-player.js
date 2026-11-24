@@ -6,8 +6,10 @@ export default function videoPlayer(options = {}) {
         sources: options.sources ?? {},
         pendingPlayback: null,
         playbackMessage: '',
+        viewRecorded: false,
+        recordingView: false,
         init() {
-            this.loading = this.$refs.video.readyState < 2;
+            this.loading = this.$refs.video.readyState < 1;
             this.failed = Boolean(this.$refs.video.error);
         },
         switchQuality(quality) {
@@ -26,6 +28,7 @@ export default function videoPlayer(options = {}) {
             video.load();
         },
         async restorePlayback() {
+            this.loading = false;
             const video = this.$refs.video;
             const playback = this.pendingPlayback;
             if (!playback) return;
@@ -42,6 +45,21 @@ export default function videoPlayer(options = {}) {
                     this.playbackMessage += ' Drücke auf Wiedergabe, um fortzufahren.';
                 }
             }
+        },
+        async recordView() {
+            if (!options.viewUrl || this.viewRecorded || this.recordingView) return;
+            this.recordingView = true;
+            try {
+                const response = await fetch(options.viewUrl, {
+                    method: 'POST', credentials: 'same-origin',
+                    headers: { Accept: 'application/json', 'X-CSRF-TOKEN': options.csrf },
+                });
+                if (!response.ok) return;
+                const result = await response.json();
+                this.viewRecorded = true;
+                this.$dispatch('video-view-recorded', { videoId: options.videoId, count: result.view_count });
+            } catch { /* View counting must not interrupt playback. */ }
+            finally { this.recordingView = false; }
         },
         retry() {
             this.failed = false;

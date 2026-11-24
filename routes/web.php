@@ -17,6 +17,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'destroy'])->name('logout');
     Route::get('/', [VideoController::class, 'index'])->name('videos.index');
     Route::get('/videos/{video}', [VideoController::class, 'show'])->name('videos.show');
+    Route::post('/videos/{video}/views', [VideoController::class, 'recordView'])->middleware('throttle:60,1')->name('videos.views.store');
     Route::get('/videos/{video}/stream', [VideoController::class, 'stream'])->name('videos.stream');
     Route::get('/videos/{video}/thumbnail', [VideoController::class, 'thumbnail'])->name('videos.thumbnail');
     Route::prefix('uploads')->middleware([VideoContributor::class])->group(function () {

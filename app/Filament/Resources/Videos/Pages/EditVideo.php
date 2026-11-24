@@ -50,7 +50,9 @@ class EditVideo extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
+            $this->getSaveFormAction()->formId('form'),
             Action::make('optimize')->label(fn (): string => $this->record->optimization_status === 'failed' ? 'MP4-Optimierung erneut versuchen' : 'Optimierte MP4 erstellen')->icon('heroicon-o-film')
+                ->color('gray')
                 ->visible(fn (): bool => app(ConversionSettings::class)->enabled() && ! $this->record->hasOptimizedCopy())
                 ->disabled(fn (): bool => $this->record->status !== VideoStatus::Ready || in_array($this->record->optimization_status, ['queued', 'processing'], true))
                 ->requiresConfirmation()->modalDescription('Erstelle eine private H.264/AAC-MP4-Datei mit bis zu 720p. Das Original bleibt erhalten und abspielbar. Die Konvertierung kann mehrere Minuten dauern.')
@@ -60,6 +62,7 @@ class EditVideo extends EditRecord
                     Notification::make()->title('MP4-Optimierung vorgemerkt')->body('Lade diese Seite später neu, um den Status zu prüfen.')->success()->send();
                 }),
             Action::make('regenerateThumbnail')->label('Vorschaubild erstellen')->icon('heroicon-o-photo')
+                ->color('gray')
                 ->disabled(fn (): bool => ! config('video.thumbnails') || $this->record->status !== VideoStatus::Ready)
                 ->action(function (): void {
                     $this->save(shouldRedirect: false, shouldSendSavedNotification: false);
@@ -67,12 +70,20 @@ class EditVideo extends EditRecord
                         $this->queueThumbnail();
                     }
                 }),
-            Action::make('reprocess')->label('Prüfung erneut versuchen')->visible(fn () => $this->record->status === VideoStatus::Failed)->requiresConfirmation()->action(function () {
+            Action::make('reprocess')->label('Prüfung erneut versuchen')->color('gray')->visible(fn () => $this->record->status === VideoStatus::Failed)->requiresConfirmation()->action(function () {
                 $this->record->update(['status' => VideoStatus::Processing, 'processing_error' => null]);
                 ProcessVideo::dispatch($this->record->id);
                 Notification::make()->title('Prüfung vorgemerkt')->success()->send();
             }),
-            DeleteAction::make()->requiresConfirmation()->modalDescription('Das Original bleibt bis zur ausdrücklichen Bereinigung auf dem Server erhalten.'),
+        ];
+    }
+
+    protected function getFormActions(): array
+    {
+        return [
+            $this->getCancelFormAction(),
+            DeleteAction::make()->outlined()->icon('heroicon-o-trash')->requiresConfirmation()
+                ->modalDescription('Das Original bleibt bis zur ausdrücklichen Bereinigung auf dem Server erhalten.'),
         ];
     }
 }

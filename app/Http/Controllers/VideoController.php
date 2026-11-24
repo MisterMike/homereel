@@ -3,11 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Contracts\VideoDelivery;
+use App\Enums\VideoStatus;
 use App\Models\Album;
 use App\Models\Video;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -41,6 +44,25 @@ class VideoController extends Controller
         Gate::authorize('view', $video);
 
         return $delivery->stream($video, $request);
+    }
+
+    public function recordView(Video $video, Request $request): JsonResponse
+    {
+        Gate::authorize('view', $video);
+        abort_unless($video->status === VideoStatus::Ready, 409, 'Das Video ist noch nicht bereit.');
+
+        DB::transaction(function () use ($video, $request): void {
+            $recorded = DB::table('video_views')->insertOrIgnore([
+                'video_id' => $video->id,
+                'session_hash' => hash('sha256', $request->user()->id.':'.$request->session()->getId()),
+            ]);
+
+            if ($recorded) {
+                $video->increment('view_count');
+            }
+        });
+
+        return response()->json(['view_count' => $video->fresh()->view_count]);
     }
 
     public function thumbnail(Video $video, Request $request, VideoDelivery $delivery): Response

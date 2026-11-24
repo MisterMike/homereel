@@ -6,10 +6,11 @@
     if ($hasOptimized) {
         $sources['optimized'] = route('videos.stream', ['video' => $video, 'quality' => 'optimized']);
     }
+    $playerOptions = ['sources' => $sources, 'initialQuality' => $initialQuality, 'videoId' => $video->uuid, 'viewUrl' => route('videos.views.store', $video), 'csrf' => csrf_token()];
 @endphp
-<div x-data="videoPlayer({ sources: {{ Js::from($sources) }}, initialQuality: '{{ $initialQuality }}' })">
+<div x-data="videoPlayer({{ Js::from($playerOptions) }})">
 <section class="video-stage" :class="{ 'has-playback-error': failed }" aria-label="Videoplayer">
-    <video x-ref="video" class="video-player" controls playsinline preload="metadata" aria-label="{{ $video->title }}" @if($video->thumbnail_path) poster="{{ route('videos.thumbnail', $video) }}" @endif src="{{ $sources[$initialQuality] }}" @loadedmetadata="restorePlayback()" @loadstart="loading = true" @loadeddata="loading = false" @canplay="loading = false" @playing="loading = false; failed = false" @waiting="loading = true" x-on:error="loading = false; failed = true">
+    <video x-ref="video" class="video-player" controls playsinline preload="metadata" aria-label="{{ $video->title }}" @if($video->thumbnail_path) poster="{{ route('videos.thumbnail', $video) }}" @endif src="{{ $sources[$initialQuality] }}" @loadedmetadata="restorePlayback()" @loadstart="loading = true" @loadeddata="loading = false" @canplay="loading = false" @play="loading = $refs.video.readyState < 3" @pause="loading = false" @playing="loading = false; failed = false; recordView()" @waiting="loading = !$refs.video.paused" x-on:error="loading = false; failed = true">
         Dein Browser unterstützt diesen Videoplayer nicht.
     </video>
     <p class="video-loading" x-show="loading && !failed" x-cloak role="status">Video wird geladen…</p>
