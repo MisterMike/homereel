@@ -7,8 +7,10 @@ use App\Jobs\GenerateVideoThumbnail;
 use App\Jobs\OptimizeVideo;
 use App\Jobs\PrepareWebVideo;
 use App\Jobs\ProcessVideo;
+use App\Models\Video;
 use App\Notifications\LibraryInvitation;
 use App\Notifications\VideoReady;
+use App\Services\Video\QueuedVideoReference;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Pages\Page;
@@ -107,7 +109,10 @@ class QueueOverview extends Page implements HasTable
                 : 'Reserviert bedeutet, dass ein Worker den Auftrag übernommen hat. Eine abgelaufene Reservierung kann auf einen unterbrochenen Worker hinweisen. Wenn wartende Aufträge liegen bleiben, prüfe den Cronjob und den Queue-Worker.')
             ->records(fn (int $page, int $recordsPerPage): LengthAwarePaginator => $this->records($page, $recordsPerPage))
             ->columns([
-                TextColumn::make('id')->label('Nr.'),
+                TextColumn::make('id')->label('Auftrag'),
+                TextColumn::make('video_title')->label('Video')->wrap()->placeholder('Kein Videobezug')
+                    ->description(fn (array $record): ?string => $record['video_description'])
+                    ->url(fn (array $record): ?string => $record['video_url']),
                 TextColumn::make('task')->label('Aufgabe')->wrap(),
                 TextColumn::make('queue')->label('Warteschlange')->formatStateUsing(fn (string $state): string => match ($state) {
                     config('queue.connections.database.queue') => 'Standard',
@@ -122,6 +127,7 @@ class QueueOverview extends Page implements HasTable
                     'waiting' => 'warning', 'delayed' => 'gray', 'reserved' => 'info',
                     'stale', 'failed' => 'danger',
                 }),
+                TextColumn::make('playback')->label('Wiedergabe')->wrap()->placeholder('—'),
                 TextColumn::make('attempts')->label('Versuche')->placeholder('—')->visible(fn (): bool => ! $this->showFailed),
                 TextColumn::make('created_at')->label(fn (): string => $this->showFailed ? 'Fehlgeschlagen am' : 'Eingereiht am')->dateTime('d.m.Y H:i:s'),
                 TextColumn::make('available_at')->label('Fällig ab')->dateTime('d.m.Y H:i:s')->visible(fn (): bool => ! $this->showFailed),
@@ -142,11 +148,20 @@ class QueueOverview extends Page implements HasTable
             ? $this->failedJobsQuery()->orderByDesc('failed_at')->orderByDesc('id')->paginate($recordsPerPage, ['id', 'queue', 'payload', 'exception', 'failed_at'], 'page', max(1, $page))
             : $this->jobsQuery()->orderBy('created_at')->orderBy('id')->paginate($recordsPerPage, ['id', 'queue', 'payload', 'attempts', 'created_at', 'available_at', 'reserved_at'], 'page', max(1, $page));
 
-        $records->through(function (stdClass $record): array {
+        $references = $records->getCollection()->mapWithKeys(fn (stdClass $record): array => [$record->id => app(QueuedVideoReference::class)->fromPayload($record->payload)]);
+        $videos = Video::withTrashed()->whereKey(array_filter($references->all()))->get()->keyBy('id');
+        $records->through(function (stdClass $record) use ($references, $videos): array {
+            $videoId = $references[$record->id];
+            $video = $videoId ? $videos->get($videoId) : null;
+
             return [
                 'key' => ($this->showFailed ? 'failed-' : 'job-').$record->id,
                 'id' => $record->id,
                 'task' => $this->taskLabel($record->payload),
+                'video_title' => $video ? $video->title.($video->trashed() ? ' (gelöscht)' : '') : ($videoId ? 'Video #'.$videoId.' nicht mehr vorhanden' : null),
+                'video_description' => $video ? '#'.$video->id.' · '.$video->original_filename.' · '.number_format($video->file_size / 1073741824, 2, ',', '.').' GiB' : null,
+                'video_url' => $video && ! $video->trashed() ? route('videos.show', $video) : null,
+                'playback' => $video ? $this->playbackLabel($video) : null,
                 'queue' => $record->queue,
                 'status' => $this->showFailed ? 'failed' : $this->jobStatus($record),
                 'attempts' => $record->attempts ?? null,
@@ -191,12 +206,31 @@ class QueueOverview extends Page implements HasTable
             GenerateVideoThumbnail::class => 'Vorschaubild erstellen',
             DetectVideoRecordingDate::class => 'Aufnahmedatum erkennen',
             OptimizeVideo::class => 'HD-MP4 erstellen',
-            PrepareWebVideo::class => 'Web-Version erstellen',
+            PrepareWebVideo::class => 'Standard-Version erstellen',
             VideoReady::class => 'Video-bereit-E-Mail versenden',
             LibraryInvitation::class => 'Einladungs-E-Mail versenden',
             SendQueuedNotifications::class => 'E-Mail versenden',
             default => 'Hintergrundauftrag',
         };
+    }
+
+    private function playbackLabel(Video $video): string
+    {
+        if ($video->trashed()) {
+            return 'Video gelöscht';
+        }
+        if ($video->hasWebCopy() && $video->hasOptimizedCopy()) {
+            return 'Standard und HD bereit';
+        }
+        if ($video->hasWebCopy()) {
+            return match ($video->optimization_status) {
+                'queued', 'processing' => 'Standard bereit · HD wird vorbereitet',
+                'failed' => 'Standard bereit · HD fehlgeschlagen',
+                default => 'Standard bereit',
+            };
+        }
+
+        return $video->hasOptimizedCopy() ? 'Höhere Qualität bereit' : 'Noch nicht abspielbar';
     }
 
     private function failureLabel(string $exception): string

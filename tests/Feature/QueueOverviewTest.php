@@ -2,13 +2,16 @@
 
 namespace Tests\Feature;
 
+use App\Enums\VideoStatus;
 use App\Filament\Pages\QueueOverview;
 use App\Jobs\DetectVideoRecordingDate;
 use App\Jobs\OptimizeVideo;
 use App\Jobs\PrepareWebVideo;
 use App\Jobs\ProcessVideo;
 use App\Models\User;
+use App\Models\Video;
 use App\Notifications\LibraryInvitation;
+use App\Services\Video\QueuedVideoReference;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -79,7 +82,7 @@ class QueueOverviewTest extends TestCase
         $this->failedJob();
 
         $component = Livewire::test(QueueOverview::class)
-            ->assertSee('Web-Version erstellen')->assertSee('Web-Version (Priorität)')->assertSee('Wartend')->assertSee('Geplant')->assertSee('Reserviert')->assertSee('Reservierung abgelaufen')
+            ->assertSee('Standard-Version erstellen')->assertSee('Web-Version (Priorität)')->assertSee('Wartend')->assertSee('Geplant')->assertSee('Reserviert')->assertSee('Reservierung abgelaufen')
             ->assertSee('HD-MP4 erstellen')->assertSee('MP4-Konvertierung');
         $records = $component->instance()->records(1, 10)->getCollection()->keyBy('id');
 
@@ -151,5 +154,57 @@ class QueueOverviewTest extends TestCase
         $administrator->forceFill(['is_admin' => false, 'is_contributor' => true])->save();
 
         $component->call('$refresh')->assertForbidden();
+    }
+
+    public function test_queue_links_both_current_and_legacy_jobs_to_the_video_with_playback_status(): void
+    {
+        $admin = User::factory()->create(['is_admin' => true]);
+        $this->actingAs($admin);
+        $video = Video::create([
+            'uuid' => (string) Str::uuid(), 'title' => 'Ferien am See', 'original_filename' => 'ferien-2023.mp4',
+            'mime_type' => 'video/mp4', 'file_size' => 4 * 1073741824, 'status' => VideoStatus::Ready,
+            'storage_path' => 'originals/private', 'uploaded_by' => $admin->id,
+            'web_status' => 'ready', 'web_path' => 'web/private.mp4', 'optimization_status' => 'processing',
+        ]);
+        $legacy = $this->queuedJob(['payload' => json_encode(['displayName' => OptimizeVideo::class, 'data' => ['command' => serialize(new OptimizeVideo($video->id, 'private-token'))]])]);
+        $current = $this->queuedJob(['payload' => json_encode(['displayName' => PrepareWebVideo::class, 'homereel_video_id' => $video->id])]);
+        $component = Livewire::test(QueueOverview::class)
+            ->assertSee('Ferien am See')->assertSee('ferien-2023.mp4')->assertSee('4,00 GiB')
+            ->assertSee('Standard bereit · HD wird vorbereitet')->assertSee(route('videos.show', $video), false)
+            ->assertDontSee('private-token')->assertDontSee('originals/private');
+        $records = $component->instance()->records(1, 10)->getCollection()->keyBy('id');
+        foreach ([$legacy, $current] as $id) {
+            $this->assertSame('Ferien am See', $records[$id]['video_title']);
+            $this->assertSame(route('videos.show', $video), $records[$id]['video_url']);
+        }
+        $video->delete();
+        $component->callAction('refresh')->assertSee('Ferien am See (gelöscht)');
+        $record = $component->instance()->records(1, 10)->items()[0];
+        $this->assertNull($record['video_url']);
+        $this->assertSame('Video gelöscht', $record['playback']);
+        $video->forceDelete();
+        $component->callAction('refresh')->assertSee('Video #'.$video->id.' nicht mehr vorhanden');
+    }
+
+    public function test_failed_jobs_keep_their_video_reference(): void
+    {
+        $this->actingAs(User::factory()->create(['is_admin' => true]));
+        $id = $this->failedJob();
+        DB::table('failed_jobs')->where('id', $id)->update(['payload' => json_encode(['displayName' => PrepareWebVideo::class, 'homereel_video_id' => 12345])]);
+        Livewire::test(QueueOverview::class)->callAction('failedJobs')->assertSee('Standard-Version erstellen')->assertSee('Video #12345 nicht mehr vorhanden');
+    }
+
+    public function test_invalid_or_unrecognized_payloads_do_not_resolve_arbitrary_objects_as_videos(): void
+    {
+        $reference = app(QueuedVideoReference::class);
+        foreach ([
+            'invalid-json',
+            json_encode(['displayName' => ProcessVideo::class, 'homereel_video_id' => ['id' => 1]]),
+            json_encode(['displayName' => ProcessVideo::class, 'data' => ['command' => 'O:8:"stdClass":1:{s:7:"videoId";i:1;}']]),
+            json_encode(['displayName' => 'UnknownJob', 'homereel_video_id' => 1]),
+            json_encode(['displayName' => ProcessVideo::class, 'homereel_video_id' => -1]),
+        ] as $payload) {
+            $this->assertNull($reference->fromPayload($payload));
+        }
     }
 }

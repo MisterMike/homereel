@@ -8,9 +8,11 @@ use App\Models\Album;
 use App\Models\Video;
 use App\Services\Video\LocalDelivery;
 use App\Services\Video\LocalUploads;
+use App\Services\Video\QueuedVideoReference;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
@@ -26,6 +28,11 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        Queue::createPayloadUsing(function (?string $connection, ?string $queue, array $payload): array {
+            $videoId = app(QueuedVideoReference::class)->fromJob($payload['data']['command'] ?? null);
+
+            return $videoId === null ? [] : ['homereel_video_id' => $videoId];
+        });
         View::composer('components.layout', function (BladeView $view): void {
             $user = auth()->user();
             if (! $user) {

@@ -30,10 +30,14 @@ class VideoReady extends Notification implements ShouldQueue
 
     public function toMail(object $notifiable): MailMessage
     {
-        return (new MailMessage)->subject('Dein Video ist bereit')
+        $standard = $this->video->hasWebCopy();
+        $mail = (new MailMessage)->subject($standard ? 'Dein Video ist in Standardqualität bereit' : 'Dein Video ist bereit')
             ->greeting('Hallo '.$notifiable->name.',')
-            ->line('«'.$this->video->title.'» ist jetzt in der Web-Version abspielbar.')
-            ->line('Eine höhere Qualität wird bei Bedarf noch im Hintergrund vorbereitet. Du kannst das Video bereits ansehen.')
-            ->action('Video ansehen', route('videos.show', $this->video));
+            ->line('«'.$this->video->title.'» ist jetzt '.($standard ? 'in Standardqualität' : 'in der Web-Version').' abspielbar.');
+        if ($standard && in_array($this->video->optimization_status, ['queued', 'processing'], true)) {
+            $mail->line('Die Standardversion ist fertig. HD wird noch im Hintergrund vorbereitet und kann weiterhin in der Warteschlange stehen. Du kannst das Video bereits ansehen.');
+        }
+
+        return $mail->action('Video ansehen', route('videos.show', $this->video));
     }
 }
