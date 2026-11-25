@@ -64,11 +64,19 @@ class EditVideo extends EditRecord
                     DetectVideoRecordingDate::dispatch($this->record->id)->afterCommit();
                     Notification::make()->title('Datumserkennung vorgemerkt')->body('Lade diese Seite nach der Verarbeitung neu. Falls die Datei kein gültiges Datum enthält, bleibt das Feld leer.')->success()->send();
                 }),
-            Action::make('optimize')->label(fn (): string => $this->record->optimization_status === 'failed' ? 'MP4-Optimierung erneut versuchen' : 'Optimierte MP4 erstellen')->icon('heroicon-o-film')
+            Action::make('prepareWeb')->label(fn (): string => $this->record->web_status === 'failed' ? 'Web-Version erneut versuchen' : 'Web-Version erstellen')->icon('heroicon-o-film')->color('gray')
+                ->visible(fn (): bool => app(ConversionSettings::class)->enabled() && ! $this->record->hasWebCopy())
+                ->disabled(fn (): bool => $this->record->status !== VideoStatus::Ready || in_array($this->record->web_status, ['queued', 'processing'], true))
+                ->action(function (): void {
+                    Gate::authorize('update', $this->record);
+                    app(VideoOptimization::class)->queue($this->record, standard: true);
+                    Notification::make()->title('Web-Version vorgemerkt')->body('Du erhältst eine E-Mail, sobald die Wiedergabe möglich ist. HD wird bei Bedarf anschliessend vorbereitet.')->success()->send();
+                }),
+            Action::make('optimize')->label(fn (): string => $this->record->optimization_status === 'failed' ? 'HD erneut versuchen' : 'Höhere Qualität erstellen')->icon('heroicon-o-film')
                 ->color('gray')
                 ->visible(fn (): bool => app(ConversionSettings::class)->enabled() && ! $this->record->hasOptimizedCopy())
                 ->disabled(fn (): bool => $this->record->status !== VideoStatus::Ready || in_array($this->record->optimization_status, ['queued', 'processing'], true))
-                ->requiresConfirmation()->modalDescription('Erstelle eine private H.264/AAC-MP4-Datei mit der Qualität aus den Videoeinstellungen. Das Original bleibt erhalten und abspielbar. Die Konvertierung kann mehrere Minuten dauern.')
+                ->requiresConfirmation()->modalDescription('Erstelle eine private H.264/AAC-MP4-Datei mit der Qualität aus den Videoeinstellungen. Das Original bleibt intern erhalten. Eine vorhandene Web-Version bleibt abspielbar. Die Konvertierung kann mehrere Minuten dauern.')
                 ->action(function (): void {
                     Gate::authorize('update', $this->record);
                     app(VideoOptimization::class)->queue($this->record);

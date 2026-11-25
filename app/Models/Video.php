@@ -18,7 +18,7 @@ class Video extends Model
 
     protected function casts(): array
     {
-        return ['status' => VideoStatus::class, 'prototype_available' => 'boolean', 'browser_compatible' => 'boolean', 'file_size' => 'integer', 'duration_seconds' => 'float', 'thumbnail_offset_seconds' => 'float', 'optimized_file_size' => 'integer', 'optimization_reserved_bytes' => 'integer', 'view_count' => 'integer', 'recorded_on' => 'date', 'optimization_profile' => 'array'];
+        return ['status' => VideoStatus::class, 'prototype_available' => 'boolean', 'browser_compatible' => 'boolean', 'file_size' => 'integer', 'duration_seconds' => 'float', 'thumbnail_offset_seconds' => 'float', 'optimized_file_size' => 'integer', 'optimization_reserved_bytes' => 'integer', 'view_count' => 'integer', 'recorded_on' => 'date', 'optimization_profile' => 'array', 'web_profile' => 'array', 'web_file_size' => 'integer', 'web_reserved_bytes' => 'integer', 'source_bitrate' => 'integer', 'ready_notified_at' => 'datetime'];
     }
 
     public function album(): BelongsTo
@@ -29,6 +29,16 @@ class Video extends Model
     public function hasOptimizedCopy(): bool
     {
         return $this->optimization_status === 'ready' && filled($this->optimized_path);
+    }
+
+    public function hasWebCopy(): bool
+    {
+        return $this->web_status === 'ready' && filled($this->web_path);
+    }
+
+    public function hasPlaybackCopy(): bool
+    {
+        return $this->hasWebCopy() || $this->hasOptimizedCopy();
     }
 
     public function getRouteKeyName(): string

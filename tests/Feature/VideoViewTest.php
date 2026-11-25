@@ -31,9 +31,10 @@ class VideoViewTest extends TestCase
             'original_filename' => 'test.mp4', 'mime_type' => 'video/mp4', 'file_size' => 10,
             'status' => VideoStatus::Ready, 'storage_path' => 'originals/test',
             'storage_provider' => 'local', 'uploaded_by' => $this->viewer->id,
-            'prototype_available' => true,
+            'prototype_available' => true, 'web_status' => 'ready', 'web_path' => 'web/test.mp4',
         ]);
-        Storage::disk('videos')->put($this->video->storage_path, '0123456789');
+        Storage::disk('videos')->put($this->video->storage_path, 'PRIVATE ORIGINAL');
+        Storage::disk('videos')->put($this->video->web_path, '0123456789');
     }
 
     public function test_opening_pages_and_fetching_video_data_do_not_count_as_views(): void
@@ -108,6 +109,8 @@ class VideoViewTest extends TestCase
             $this->postJson(route('videos.views.store', $this->video))->assertConflict();
         }
 
+        $this->video->update(['status' => VideoStatus::Ready, 'web_status' => 'processing']);
+        $this->postJson(route('videos.views.store', $this->video))->assertConflict();
         $this->assertSame(0, $this->video->fresh()->view_count);
         $this->assertDatabaseCount('video_views', 0);
     }

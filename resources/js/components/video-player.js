@@ -2,7 +2,7 @@ export default function videoPlayer(options = {}) {
     return {
         loading: true,
         failed: false,
-        quality: options.initialQuality ?? 'original',
+        quality: options.initialQuality ?? 'standard',
         sources: options.sources ?? {},
         pendingPlayback: null,
         playbackMessage: '',
@@ -116,7 +116,7 @@ export default function videoPlayer(options = {}) {
                 ? Math.min(playback.time, Math.max(0, video.duration - 0.1))
                 : playback.time;
             video.playbackRate = playback.rate;
-            this.playbackMessage = `Gewechselt zu ${this.quality === 'optimized' ? 'Optimiert' : 'Original'}.`;
+            this.playbackMessage = `Gewechselt zu ${this.quality === 'standard' ? 'Standard' : 'Höhere Qualität'}.`;
             if (playback.playing) {
                 try {
                     await video.play();

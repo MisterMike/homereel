@@ -7,6 +7,8 @@ use Illuminate\Validation\Rule;
 
 class ConversionSettings
 {
+    public const WEB_PROFILE = ['crf' => 23, 'preset' => 'veryfast', 'max_height' => 720, 'video_bitrate' => 2500, 'audio_bitrate' => 128];
+
     public const DEFAULT_PROFILE = ['crf' => 23, 'preset' => 'veryfast', 'max_height' => 720, 'video_bitrate' => 2500, 'audio_bitrate' => 128];
 
     public const PRESETS = ['ultrafast', 'superfast', 'veryfast', 'faster', 'fast', 'medium', 'slow', 'slower', 'veryslow'];

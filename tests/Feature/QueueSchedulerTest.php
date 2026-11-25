@@ -25,7 +25,7 @@ class QueueSchedulerTest extends TestCase
         $workers = $events->filter(fn (Event $event): bool => str_contains($event->command, 'queue:work'))->values();
         $this->assertCount(2, $workers);
         $normal = $workers->first(fn (Event $event): bool => str_contains($event->command, 'queue:work database '));
-        $conversion = $workers->first(fn (Event $event): bool => str_contains($event->command, 'queue:work transcoding --queue=transcoding '));
+        $conversion = $workers->first(fn (Event $event): bool => str_contains($event->command, 'queue:work transcoding --queue=standard,transcoding '));
         $this->assertNotNull($normal);
         $this->assertNotNull($conversion);
         $this->assertStringContainsString('--timeout=150', $normal->command);

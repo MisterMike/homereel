@@ -49,7 +49,7 @@ class VideoController extends Controller
     public function recordView(Video $video, Request $request): JsonResponse
     {
         Gate::authorize('view', $video);
-        abort_unless($video->status === VideoStatus::Ready, 409, 'Das Video ist noch nicht bereit.');
+        abort_unless($video->status === VideoStatus::Ready && $video->hasPlaybackCopy(), 409, 'Das Video ist noch nicht bereit.');
 
         DB::transaction(function () use ($video, $request): void {
             $recorded = DB::table('video_views')->insertOrIgnore([

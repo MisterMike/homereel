@@ -25,21 +25,27 @@ class PurgeVideos extends Command
         Video::onlyTrashed()->where('deleted_at', '<=', now()->subDays((int) $this->option('days')))->each(function ($video) use ($lock) {
             try {
                 $lock->run('optimization-'.$video->uuid, function () use ($video, $lock) {
-                    $lock->run($video->uuid, function () use ($video) {
-                        $video->refresh();
-                        if (! $video->trashed()) {
-                            return;
-                        }
-                        $disk = Storage::disk(config('video.disk'));
-                        $paths = [$video->storage_path, $video->thumbnail_path, $video->optimized_path];
-                        if ($video->optimization_token) {
-                            $paths[] = app(VideoOptimizer::class)->temporaryPath($video, $video->optimization_token);
-                            $paths[] = app(VideoOptimizer::class)->finalPath($video, $video->optimization_token);
-                        }
-                        if (! $disk->delete(array_filter($paths))) {
-                            throw new \RuntimeException('Some media files could not be purged; the database record was retained.');
-                        }
-                        $video->forceDelete();
+                    $lock->run('web-optimization-'.$video->uuid, function () use ($video, $lock): void {
+                        $lock->run($video->uuid, function () use ($video) {
+                            $video->refresh();
+                            if (! $video->trashed()) {
+                                return;
+                            }
+                            $disk = Storage::disk(config('video.disk'));
+                            $paths = [$video->storage_path, $video->thumbnail_path, $video->optimized_path, $video->web_path];
+                            if ($video->optimization_token) {
+                                $paths[] = app(VideoOptimizer::class)->temporaryPath($video, $video->optimization_token);
+                                $paths[] = app(VideoOptimizer::class)->finalPath($video, $video->optimization_token);
+                            }
+                            if ($video->web_token) {
+                                $paths[] = app(VideoOptimizer::class)->temporaryPath($video, $video->web_token, standard: true);
+                                $paths[] = app(VideoOptimizer::class)->finalPath($video, $video->web_token, standard: true);
+                            }
+                            if (! $disk->delete(array_filter($paths))) {
+                                throw new \RuntimeException('Some media files could not be purged; the database record was retained.');
+                            }
+                            $video->forceDelete();
+                        });
                     });
                 });
             } catch (HttpException $exception) {

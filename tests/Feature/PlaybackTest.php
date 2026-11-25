@@ -24,8 +24,9 @@ class PlaybackTest extends TestCase
         Storage::fake('videos');
         $user = User::factory()->create();
         $this->actingAs($user);
-        $this->video = Video::create(['uuid' => (string) Str::uuid(), 'title' => 'Test', 'original_filename' => 'test.mp4', 'mime_type' => 'video/mp4', 'file_size' => 10, 'status' => VideoStatus::Ready, 'storage_path' => 'originals/test', 'storage_provider' => 'local', 'uploaded_by' => $user->id, 'prototype_available' => true, 'thumbnail_path' => 'thumbnails/test.jpg']);
-        Storage::disk('videos')->put('originals/test', '0123456789');
+        $this->video = Video::create(['uuid' => (string) Str::uuid(), 'title' => 'Test', 'original_filename' => 'test.mp4', 'mime_type' => 'video/mp4', 'file_size' => 10, 'status' => VideoStatus::Ready, 'storage_path' => 'originals/test', 'storage_provider' => 'local', 'uploaded_by' => $user->id, 'prototype_available' => true, 'thumbnail_path' => 'thumbnails/test.jpg', 'web_status' => 'ready', 'web_path' => 'web/test.mp4']);
+        Storage::disk('videos')->put('originals/test', 'PRIVATE ORIGINAL');
+        Storage::disk('videos')->put('web/test.mp4', '0123456789');
         Storage::disk('videos')->put('thumbnails/test.jpg', 'jpeg');
         $this->url = '/videos/'.$this->video->uuid.'/stream';
     }
@@ -66,8 +67,9 @@ class PlaybackTest extends TestCase
     {
         Storage::disk('videos')->put('optimized/test.mp4', 'OPTIMIZED');
         $this->video->update(['optimization_status' => 'ready', 'optimized_path' => 'optimized/test.mp4']);
-        $this->assertSame('OPTIMIZED', $this->get($this->url)->assertOk()->assertHeader('Content-Type', 'video/mp4')->streamedContent());
-        $this->assertSame('0123456789', $this->get($this->url.'?quality=original')->assertOk()->streamedContent());
+        $this->assertSame('0123456789', $this->get($this->url)->assertOk()->assertHeader('Content-Type', 'video/mp4')->streamedContent());
+        $this->get($this->url.'?quality=original')->assertUnprocessable();
+        $this->assertSame('OPTIMIZED', $this->get($this->url.'?quality=hd')->assertOk()->streamedContent());
         $this->assertSame('TIM', $this->withHeader('Range', 'bytes=2-4')->get($this->url.'?quality=optimized')->assertStatus(206)->assertHeader('Content-Range', 'bytes 2-4/9')->streamedContent());
         $this->head($this->url.'?quality=optimized')->assertOk()->assertHeader('Content-Length', '9');
         $this->video->update(['prototype_available' => false]);
@@ -84,7 +86,7 @@ class PlaybackTest extends TestCase
     public function test_sparse_five_gib_file_seeks_without_loading_original_into_memory(): void
     {
         $size = 5 * 1073741824;
-        $file = fopen(Storage::disk('videos')->path('originals/test'), 'c+b');
+        $file = fopen(Storage::disk('videos')->path('web/test.mp4'), 'c+b');
         ftruncate($file, $size);
         fseek($file, $size - 4);
         fwrite($file, 'TAIL');

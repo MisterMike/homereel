@@ -1,10 +1,14 @@
 @props(['video'])
 @php
     $hasOptimized = $video->hasOptimizedCopy();
-    $initialQuality = $hasOptimized ? 'optimized' : 'original';
-    $sources = ['original' => route('videos.stream', ['video' => $video, 'quality' => 'original'])];
+    $hasStandard = $video->hasWebCopy();
+    $initialQuality = $hasStandard ? 'standard' : 'hd';
+    $sources = [];
+    if ($hasStandard) {
+        $sources['standard'] = route('videos.stream', ['video' => $video, 'quality' => 'standard']);
+    }
     if ($hasOptimized) {
-        $sources['optimized'] = route('videos.stream', ['video' => $video, 'quality' => 'optimized']);
+        $sources['hd'] = route('videos.stream', ['video' => $video, 'quality' => 'hd']);
     }
     $playerOptions = ['sources' => $sources, 'initialQuality' => $initialQuality, 'videoId' => $video->uuid, 'viewUrl' => route('videos.views.store', $video), 'csrf' => csrf_token()];
 @endphp
@@ -16,20 +20,29 @@
     <p class="video-loading" x-show="loading && !failed" x-cloak role="status">Video wird geladen…</p>
     <div class="video-playback-error" x-show="failed" x-cloak role="alert">
         <x-ui.icon name="warning" /><h2>Dieses Video konnte nicht abgespielt werden.</h2>
-        <p>Die Verbindung wurde möglicherweise unterbrochen oder dein Browser unterstützt dieses Original nicht. Versuche es erneut oder bitte die Person, die eure Mediathek verwaltet, um Hilfe.</p>
+        <p>Die Verbindung wurde möglicherweise unterbrochen oder dein Browser konnte die Web-Version nicht laden. Versuche es erneut oder bitte die Person, die eure Mediathek verwaltet, um Hilfe.</p>
         <button class="hr-button hr-button-secondary" type="button" @click="retry()">Erneut versuchen</button>
     </div>
 </section>
 
-@if($hasOptimized)
-    <div class="video-quality" x-cloak>
+<div class="video-quality">
+    @if($hasStandard && $hasOptimized)
         <div class="video-quality-options" role="group" aria-label="Wiedergabequalität">
-            <button type="button" :aria-pressed="quality === 'optimized'" @click="switchQuality('optimized')">Optimiert <span>{{ $video->optimized_height }}p</span></button>
-            <button type="button" :aria-pressed="quality === 'original'" @click="switchQuality('original')">Original @if($video->height)<span>{{ $video->height }}p</span>@endif</button>
+            <button type="button" :aria-pressed="quality === 'standard'" @click="switchQuality('standard')">Standard <span>{{ $video->web_height }}p</span></button>
+            <button type="button" :aria-pressed="quality === 'hd'" @click="switchQuality('hd')">Höhere Qualität <span>{{ $video->optimized_height }}p</span></button>
         </div>
-        <p>Die optimierte Version benötigt meist weniger Bandbreite. Das Original bietet die hochgeladene Qualität.</p>
-    </div>
-@endif
+        <p>Standard benötigt weniger Bandbreite. Bei einer langsamen Verbindung wähle diese Version.</p>
+    @elseif($hasStandard)
+        <p>Standard · {{ $video->web_height }}p · Für eine flüssige Wiedergabe bei geringer Bandbreite.</p>
+    @else
+        <p>Web-Version · {{ $video->optimized_height }}p</p>
+    @endif
+    @if(in_array($video->optimization_status, ['queued', 'processing'], true))
+        <p role="status">HD wird vorbereitet. Du kannst das Video bereits in Standardqualität ansehen. Lade die Seite später neu, um HD auszuwählen.</p>
+    @elseif($hasStandard && $video->optimization_status === 'failed')
+        <p role="status">HD konnte nicht erstellt werden. Die Standardversion bleibt abspielbar.</p>
+    @endif
+</div>
 <div class="video-quality" x-show="offerFullscreen" x-cloak>
     <button type="button" class="hr-button hr-button-secondary" @click="enterFullscreen()"><x-ui.icon name="fullscreen" /> Vollbild</button>
     <p x-show="fullscreenNeedsTap" role="status">Tippe auf «Vollbild», um das Video bildschirmfüllend anzusehen.</p>

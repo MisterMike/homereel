@@ -58,11 +58,14 @@ class VideoResource extends Resource
                 ->helperText('Im Kalender kannst du den Monat auswählen und das Jahr direkt eingeben. Das Datum wird nach Möglichkeit aus der Videodatei erkannt; es kann auch das Exportdatum sein. Ohne Aufnahmedatum gilt für die Sortierung das Upload-Datum.'),
             Textarea::make('description')->label('Beschreibung')->maxLength(10000)->columnSpanFull(),
             Toggle::make('prototype_available')->label('Für Familienmitglieder verfügbar')->default(true)->helperText('Neue Uploads sind standardmässig nach der Verarbeitung für deine Familie verfügbar. Deaktiviere dies, um ein Video nur für dich und Administratoren sichtbar zu machen.'),
-            Section::make('Optimierte Wiedergabe')->columnSpanFull()->schema([
-                TextEntry::make('optimization_status')->label('MP4-Kopie')->formatStateUsing(fn (?string $state): string => __('statuses.'.($state ?? 'not_requested'))),
+            Section::make('Web-Wiedergabe')->columnSpanFull()->schema([
+                TextEntry::make('web_status')->label('Standardversion')->formatStateUsing(fn (?string $state): string => __('statuses.'.($state ?? 'not_requested'))),
+                TextEntry::make('web_file_size')->label('Grösse der Standardversion')->formatStateUsing(fn ($state): string => number_format($state / 1048576, 1, ',', '.').' MiB')->placeholder('Noch keine Kopie'),
+                TextEntry::make('web_error')->label('Web-Konvertierung')->color('danger')->visible(fn (?Video $record): bool => filled($record?->web_error)),
+                TextEntry::make('optimization_status')->label('Höhere Qualität')->formatStateUsing(fn (?string $state): string => __('statuses.'.($state ?? 'not_requested'))),
                 TextEntry::make('optimized_file_size')->label('Grösse der optimierten Kopie')->formatStateUsing(fn ($state): string => number_format($state / 1048576, 1, ',', '.').' MiB')->placeholder('Noch keine Kopie'),
                 TextEntry::make('optimization_error')->label('Optimierung')->color('danger')->visible(fn (?Video $record): bool => filled($record?->optimization_error)),
-            ])->description('Eine separate H.264/AAC-MP4-Datei mit der Qualität aus den Videoeinstellungen. Sobald sie bereit ist, bietet der Player die Auswahl zwischen optimierter Version und Original.'),
+            ])->description('Standard wird zuerst für geringe Bandbreite erstellt (bis 720p, maximal 2500 kbit/s). HD folgt, wenn Quelle und Qualitätseinstellungen eine höhere Auflösung ermöglichen. Das Original bleibt intern.'),
             Section::make('Vorschaubild')->columnSpanFull()->schema([
                 ImageEntry::make('thumbnail_preview')->label('Aktuelles Vorschaubild')
                     ->state(fn (?Video $record): ?string => $record?->thumbnail_path ? route('videos.thumbnail', $record) : null)
@@ -87,7 +90,8 @@ class VideoResource extends Resource
             TextColumn::make('recorded_on')->label('Aufnahmedatum')->date('d.m.Y')->placeholder('Unbekannt')
                 ->sortable(query: fn (Builder $query, string $direction): Builder => $query->byRecordingDate($direction)),
             TextColumn::make('file_size')->label('Grösse')->formatStateUsing(fn ($state) => number_format($state / 1048576, 1, ',', '.').' MiB'),
-            TextColumn::make('optimization_status')->label('MP4-Kopie')->formatStateUsing(fn (?string $state): string => __('statuses.'.($state ?? 'not_requested')))->badge(),
+            TextColumn::make('web_status')->label('Standard')->formatStateUsing(fn (?string $state): string => __('statuses.'.($state ?? 'not_requested')))->badge(),
+            TextColumn::make('optimization_status')->label('Höhere Qualität')->formatStateUsing(fn (?string $state): string => __('statuses.'.($state ?? 'not_requested')))->badge(),
             TextColumn::make('duration_label')->label('Dauer'), TextColumn::make('status')->formatStateUsing(fn (VideoStatus $state): string => __('statuses.'.$state->value))->badge(),
             TextColumn::make('view_count')->label('Aufrufe')->formatStateUsing(fn (int $state): string => number_format($state, 0, ',', '.'))->sortable(),
             TextColumn::make('browser_compatible')->label('MP4-Wiedergabe')->formatStateUsing(fn ($state) => $state ? 'Kompatibel' : 'Format prüfen'),

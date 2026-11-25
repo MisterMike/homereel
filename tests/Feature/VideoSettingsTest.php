@@ -6,6 +6,7 @@ use App\Enums\VideoStatus;
 use App\Filament\Pages\VideoSettings;
 use App\Filament\Resources\Videos\Pages\EditVideo;
 use App\Jobs\OptimizeVideo;
+use App\Jobs\PrepareWebVideo;
 use App\Jobs\ProcessVideo;
 use App\Models\User;
 use App\Models\Video;
@@ -169,8 +170,8 @@ class VideoSettingsTest extends TestCase
         app(ConversionSettings::class)->save(true, true);
         $video->update(['status' => VideoStatus::Processing]);
         (new ProcessVideo($video->id))->handle(app(VideoInspector::class), app(MediaLock::class));
-        Queue::assertPushed(OptimizeVideo::class, 1);
-        $this->assertSame('queued', $video->fresh()->optimization_status);
+        Queue::assertPushed(PrepareWebVideo::class, 1);
+        $this->assertSame('queued', $video->fresh()->web_status);
     }
 
     public function test_disabling_conversion_does_not_interrupt_running_conversion_or_remove_existing_copy(): void

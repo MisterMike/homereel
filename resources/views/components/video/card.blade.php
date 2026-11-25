@@ -4,7 +4,7 @@
         <div class="video-card-image">
             <x-video.thumbnail :video="$video" />
             @if($video->duration_seconds !== null)<span class="video-duration">{{ $video->duration_label }}</span>@endif
-            @if($video->status !== \App\Enums\VideoStatus::Ready)<span class="video-status" data-status="{{ $video->status->value }}">{{ __('statuses.'.$video->status->value) }}</span>@endif
+            @if($video->status !== \App\Enums\VideoStatus::Ready)<span class="video-status" data-status="{{ $video->status->value }}">{{ __('statuses.'.$video->status->value) }}</span>@elseif(!$video->hasPlaybackCopy())<span class="video-status" data-status="processing">{{ $video->web_status === 'failed' ? 'Konvertierung fehlgeschlagen' : ($video->web_status === 'not_requested' ? 'Web-Version fehlt' : 'Web-Version wird vorbereitet') }}</span>@endif
         </div>
         <h3>{{ $video->title }}</h3>
         <x-video.metadata :video="$video" />

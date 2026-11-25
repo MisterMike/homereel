@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Filament\Pages\QueueOverview;
 use App\Jobs\DetectVideoRecordingDate;
 use App\Jobs\OptimizeVideo;
+use App\Jobs\PrepareWebVideo;
 use App\Jobs\ProcessVideo;
 use App\Models\User;
 use App\Notifications\LibraryInvitation;
@@ -74,11 +75,12 @@ class QueueOverviewTest extends TestCase
         $stale = $this->queuedJob(['reserved_at' => now()->subSeconds(300)->timestamp, 'attempts' => 2]);
         $conversion = $this->queuedJob(['queue' => 'transcoding', 'payload' => json_encode(['displayName' => OptimizeVideo::class]), 'reserved_at' => now()->subMinutes(20)->timestamp, 'attempts' => 1]);
         $staleConversion = $this->queuedJob(['queue' => 'transcoding', 'reserved_at' => now()->subSeconds(3780)->timestamp, 'attempts' => 1]);
+        $standard = $this->queuedJob(['queue' => 'standard', 'payload' => json_encode(['displayName' => PrepareWebVideo::class]), 'reserved_at' => now()->subMinutes(20)->timestamp, 'attempts' => 1]);
         $this->failedJob();
 
         $component = Livewire::test(QueueOverview::class)
-            ->assertSee('Wartend')->assertSee('Geplant')->assertSee('Reserviert')->assertSee('Reservierung abgelaufen')
-            ->assertSee('Optimierte MP4 erstellen')->assertSee('MP4-Konvertierung');
+            ->assertSee('Web-Version erstellen')->assertSee('Web-Version (Priorität)')->assertSee('Wartend')->assertSee('Geplant')->assertSee('Reserviert')->assertSee('Reservierung abgelaufen')
+            ->assertSee('HD-MP4 erstellen')->assertSee('MP4-Konvertierung');
         $records = $component->instance()->records(1, 10)->getCollection()->keyBy('id');
 
         $this->assertSame('waiting', $records[$waiting]['status']);
@@ -87,7 +89,8 @@ class QueueOverviewTest extends TestCase
         $this->assertSame('stale', $records[$stale]['status']);
         $this->assertSame('reserved', $records[$conversion]['status']);
         $this->assertSame('stale', $records[$staleConversion]['status']);
-        $this->assertSame(['pending' => 2, 'reserved' => 4, 'failed' => 1], $component->instance()->summary());
+        $this->assertSame('reserved', $records[$standard]['status']);
+        $this->assertSame(['pending' => 2, 'reserved' => 5, 'failed' => 1], $component->instance()->summary());
     }
 
     public function test_failed_jobs_have_readable_labels_without_exposing_payloads_or_exception_secrets(): void

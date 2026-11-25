@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Enums\VideoStatus;
 use App\Filament\Resources\Videos\Pages\EditVideo;
 use App\Jobs\OptimizeVideo;
+use App\Jobs\PrepareWebVideo;
 use App\Jobs\ProcessVideo;
 use App\Models\User;
 use App\Models\Video;
@@ -123,10 +124,10 @@ class VideoOptimizationTest extends TestCase
         $path = $video->optimized_path;
         $this->runJob($video);
         $this->assertSame($path, $video->fresh()->optimized_path);
-        $this->get(route('videos.show', $video))->assertOk()->assertSee('Wiedergabequalität')->assertSee('Optimiert');
+        $this->get(route('videos.show', $video))->assertOk()->assertSee('Web-Version')->assertDontSee('quality=original', false);
     }
 
-    public function test_failed_conversion_keeps_playable_original_and_releases_space(): void
+    public function test_failed_conversion_preserves_private_original_and_releases_space(): void
     {
         $video = $this->video();
         app(VideoOptimization::class)->queue($video);
@@ -149,7 +150,7 @@ class VideoOptimizationTest extends TestCase
         $this->assertSame(VideoStatus::Ready, $video->status);
         $this->assertSame(0, $video->optimization_reserved_bytes);
         $this->assertSame([], Storage::disk('videos')->files('optimized'));
-        $this->get(route('videos.stream', $video))->assertOk();
+        $this->get(route('videos.stream', $video))->assertStatus(409);
         app(VideoOptimization::class)->queue($video);
         $this->assertSame('queued', $video->fresh()->optimization_status);
     }
@@ -333,6 +334,6 @@ class VideoOptimizationTest extends TestCase
         config(['video.optimization_auto' => true, 'video.thumbnails' => false]);
         (new ProcessVideo($video->id))->handle(app(VideoInspector::class), app(MediaLock::class));
         $this->assertSame(VideoStatus::Ready, $video->fresh()->status);
-        Queue::assertPushed(OptimizeVideo::class, 1);
+        Queue::assertPushed(PrepareWebVideo::class, 1);
     }
 }

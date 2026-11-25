@@ -15,7 +15,7 @@ Schedule::command('queue:work database --stop-when-empty --tries=3 --timeout='.$
     ->runInBackground()
     ->appendOutputTo(storage_path('logs/queue.log'));
 
-Schedule::command('queue:work transcoding --queue=transcoding --stop-when-empty --tries=1 --timeout='.$conversionTimeout.' --max-time=50')
+Schedule::command('queue:work transcoding --queue=standard,transcoding --stop-when-empty --tries=1 --timeout='.$conversionTimeout.' --max-time=50')
     ->everyMinute()
     ->withoutOverlapping((int) ceil(($conversionTimeout + 50) / 60) + 1)
     ->runInBackground()

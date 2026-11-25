@@ -16,13 +16,19 @@ class LocalDelivery implements VideoDelivery
         abort_unless($video->status === VideoStatus::Ready, 409, 'Das Video ist noch nicht bereit.');
 
         $quality = $request->query('quality', 'auto');
-        abort_unless(in_array($quality, ['auto', 'original', 'optimized'], true), 422, 'Unbekannte Wiedergabequalität.');
-        abort_if($quality === 'optimized' && ! $video->hasOptimizedCopy(), 404);
-        if ($quality !== 'original' && $video->hasOptimizedCopy()) {
+        abort_unless(in_array($quality, ['auto', 'standard', 'hd', 'optimized'], true), 422, 'Unbekannte Wiedergabequalität.');
+        if ($quality === 'standard' || ($quality === 'auto' && $video->hasWebCopy())) {
+            abort_unless($video->hasWebCopy(), 404);
+
+            return $this->deliver($video->web_path, 'video/mp4', $request);
+        }
+        if (in_array($quality, ['hd', 'optimized'], true) || $video->hasOptimizedCopy()) {
+            abort_unless($video->hasOptimizedCopy(), 404);
+
             return $this->deliver($video->optimized_path, 'video/mp4', $request);
         }
+        abort(409, 'Die Web-Version wird noch vorbereitet.');
 
-        return $this->deliver($video->storage_path, $video->mime_type, $request);
     }
 
     public function thumbnail(Video $video, Request $request): Response

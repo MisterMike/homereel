@@ -5,8 +5,10 @@ namespace App\Filament\Pages;
 use App\Jobs\DetectVideoRecordingDate;
 use App\Jobs\GenerateVideoThumbnail;
 use App\Jobs\OptimizeVideo;
+use App\Jobs\PrepareWebVideo;
 use App\Jobs\ProcessVideo;
 use App\Notifications\LibraryInvitation;
+use App\Notifications\VideoReady;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Pages\Page;
@@ -110,6 +112,7 @@ class QueueOverview extends Page implements HasTable
                 TextColumn::make('queue')->label('Warteschlange')->formatStateUsing(fn (string $state): string => match ($state) {
                     config('queue.connections.database.queue') => 'Standard',
                     config('queue.connections.transcoding.queue') => 'MP4-Konvertierung',
+                    'standard' => 'Web-Version (Priorität)',
                     default => $state,
                 }),
                 TextColumn::make('status')->label('Status')->badge()->formatStateUsing(fn (string $state): string => match ($state) {
@@ -170,7 +173,7 @@ class QueueOverview extends Page implements HasTable
     private function jobStatus(stdClass $job): string
     {
         if ($job->reserved_at !== null) {
-            $connection = $job->queue === config('queue.connections.transcoding.queue') ? 'transcoding' : 'database';
+            $connection = in_array($job->queue, ['standard', config('queue.connections.transcoding.queue')], true) ? 'transcoding' : 'database';
             $retryAfter = (int) config('queue.connections.'.$connection.'.retry_after');
 
             return $job->reserved_at + $retryAfter <= now()->timestamp ? 'stale' : 'reserved';
@@ -187,8 +190,11 @@ class QueueOverview extends Page implements HasTable
             ProcessVideo::class => 'Video prüfen',
             GenerateVideoThumbnail::class => 'Vorschaubild erstellen',
             DetectVideoRecordingDate::class => 'Aufnahmedatum erkennen',
-            OptimizeVideo::class => 'Optimierte MP4 erstellen',
-            LibraryInvitation::class, SendQueuedNotifications::class => 'Einladungs-E-Mail versenden',
+            OptimizeVideo::class => 'HD-MP4 erstellen',
+            PrepareWebVideo::class => 'Web-Version erstellen',
+            VideoReady::class => 'Video-bereit-E-Mail versenden',
+            LibraryInvitation::class => 'Einladungs-E-Mail versenden',
+            SendQueuedNotifications::class => 'E-Mail versenden',
             default => 'Hintergrundauftrag',
         };
     }

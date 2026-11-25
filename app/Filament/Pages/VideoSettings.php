@@ -41,23 +41,23 @@ class VideoSettings extends Page
     {
         return $schema->components([
             Section::make('MP4-Konvertierung')
-                ->description('Erstelle eine separate optimierte Kopie für eine flüssigere Wiedergabe. Originale und vorhandene optimierte Kopien bleiben beim Deaktivieren erhalten.')
+                ->description('Neue Videos werden zuerst in Standardqualität bereitgestellt (bis 720p, maximal 2500 kbit/s, CRF 23). Danach folgt bei Bedarf HD. Das Original bleibt intern und wird nicht im Player angeboten.')
                 ->schema([
                     Toggle::make('enabled')->label('MP4-Konvertierung aktivieren')->rules(['required', 'boolean'])->live()
                         ->helperText('Erfordert einen laufenden Konvertierungs-Worker. Aktiviere dies nur, wenn dein Hoster eine längere CPU-Nutzung durch FFmpeg erlaubt. Beim Deaktivieren werden laufende Konvertierungen abgeschlossen; wartende Aufträge werden bei der nächsten Prüfung abgebrochen.'),
                     Toggle::make('automatic')->label('Neue Uploads automatisch konvertieren')->rules(['required', 'boolean'])
                         ->disabled(fn (Get $get): bool => ! $get('enabled'))->dehydrated()
-                        ->helperText('Nach der Prüfung jedes neuen Uploads wird eine optimierte MP4-Kopie eingeplant. Bestehende Videos können einzeln auf ihrer Bearbeitungsseite konvertiert werden.'),
+                        ->helperText('Nach jedem Upload wird zuerst die Standardversion eingeplant. Sobald sie bereit ist, erhält die hochladende Person eine E-Mail. Bestehende Videos können auf ihrer Bearbeitungsseite mit «Web-Version erstellen» vorbereitet werden.'),
                 ]),
-            Section::make('Bild- und Tonqualität')
-                ->description('Änderungen gelten für neue und noch wartende Konvertierungen. Laufende Konvertierungen und bereits erstellte Kopien behalten ihre Qualität. Das Original bleibt immer erhalten.')
+            Section::make('Höhere Web-Qualität (HD)')
+                ->description('Diese Einstellungen gelten für HD. HD wird nur erstellt, wenn die resultierende Auflösung höher als die der Standardversion ist. Mit höchstens 720p entfällt HD normalerweise. Änderungen gelten für neue und wartende HD-Aufträge; laufende Aufträge behalten ihre Qualität.')
                 ->columns(2)
                 ->schema([
                     TextInput::make('crf')->label('Bildqualität (CRF)')->numeric()->required()->integer()->minValue(16)->maxValue(30)
                         ->helperText('Kleinerer Wert = mehr Details und meist grössere Dateien. 18 für hohe Qualität, 23 war die bisherige Einstellung.'),
                     Select::make('max_height')->label('Maximale Auflösung')->required()->options([
                         0 => 'Originalgrösse beibehalten', 480 => '480p', 720 => '720p', 1080 => '1080p (Full HD)', 1440 => '1440p', 2160 => '2160p (4K)',
-                    ])->helperText('Kleinere Videos werden nicht hochskaliert. Die Begrenzung gilt für ein 16:9-Bildfeld.'),
+                    ])->helperText('Wähle 1080p oder mehr für eine zusätzliche HD-Version. Kleinere Videos werden nicht hochskaliert. Die Begrenzung gilt für ein 16:9-Bildfeld.'),
                     TextInput::make('video_bitrate')->label('Maximale Videobitrate')->suffix('kbit/s')->numeric()->required()->integer()->minValue(250)->maxValue(100000)
                         ->helperText('Eine zu niedrige Obergrenze begrenzt die Qualität auch bei niedrigem CRF. Bisher: 2500 kbit/s.'),
                     Select::make('audio_bitrate')->label('Audiobitrate')->required()->options([

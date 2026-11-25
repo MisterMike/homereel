@@ -77,8 +77,9 @@ class ProcessVideo implements ShouldQueue
         });
         if (app(ConversionSettings::class)->automatic()) {
             try {
-                app(VideoOptimization::class)->queue($video);
+                app(VideoOptimization::class)->queue($video, standard: true);
             } catch (\Throwable $exception) {
+                Video::whereKey($video->id)->where('web_status', 'not_requested')->update(['web_status' => 'failed', 'web_error' => 'Die Web-Version konnte nicht eingeplant werden. Bitte prüfe den verfügbaren Speicher und fordere die Web-Version auf der Bearbeitungsseite erneut an.']);
                 Log::warning('Automatic optimization could not be queued', ['video' => $video->id, 'exception' => $exception]);
             }
         }

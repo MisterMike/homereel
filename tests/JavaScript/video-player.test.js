@@ -7,7 +7,7 @@ function player({ paused = false, rejectPlay = false } = {}) {
         load() { this.loads++; this.currentTime = 0; },
         async play() { this.plays++; if (rejectPlay) throw new Error('Autoplay blocked'); },
     };
-    const instance = videoPlayer({ sources: { optimized: '/private?quality=optimized', original: '/private?quality=original' }, initialQuality: 'optimized' });
+    const instance = videoPlayer({ sources: { standard: '/private?quality=standard', hd: '/private?quality=hd' }, initialQuality: 'standard' });
     instance.$refs = { video };
     return { instance, video };
 }
@@ -37,8 +37,8 @@ test('metadata arriving before play clears the loading indicator', async () => {
 
 test('switching keeps position, playback speed and playing state', async () => {
     const { instance, video } = player();
-    instance.switchQuality('original');
-    assert.equal(video.src, '/private?quality=original');
+    instance.switchQuality('hd');
+    assert.equal(video.src, '/private?quality=hd');
     await instance.restorePlayback();
     assert.equal(video.currentTime, 137);
     assert.equal(video.playbackRate, 1.5);
@@ -47,21 +47,21 @@ test('switching keeps position, playback speed and playing state', async () => {
 
 test('a paused video remains paused and rapid switches keep the original position', async () => {
     const { instance, video } = player({ paused: true });
-    instance.switchQuality('original');
-    instance.switchQuality('optimized');
+    instance.switchQuality('hd');
+    instance.switchQuality('standard');
     await instance.restorePlayback();
     assert.equal(video.currentTime, 137);
     assert.equal(video.plays, 0);
-    assert.equal(instance.quality, 'optimized');
+    assert.equal(instance.quality, 'standard');
     assert.equal(instance.loading, false);
 });
 
 test('missing and current variants do not reload; end position is clamped', async () => {
     const { instance, video } = player();
     instance.switchQuality('missing');
-    instance.switchQuality('optimized');
+    instance.switchQuality('standard');
     assert.equal(video.loads, 0);
-    instance.switchQuality('original');
+    instance.switchQuality('hd');
     video.duration = 130;
     await instance.restorePlayback();
     assert.equal(video.currentTime, 129.9);
@@ -69,7 +69,7 @@ test('missing and current variants do not reload; end position is clamped', asyn
 
 test('autoplay denial gives a recovery message without marking the stream as failed', async () => {
     const { instance } = player({ rejectPlay: true });
-    instance.switchQuality('original');
+    instance.switchQuality('hd');
     await instance.restorePlayback();
     assert.match(instance.playbackMessage, /Drücke auf Wiedergabe/);
     assert.equal(instance.failed, false);
@@ -78,7 +78,7 @@ test('autoplay denial gives a recovery message without marking the stream as fai
 test('playing records one view and updates the displayed count across repeated events and quality switches', async (t) => {
     const originalFetch = globalThis.fetch;
     t.after(() => { globalThis.fetch = originalFetch; });
-    const instance = videoPlayer({ viewUrl: '/videos/clip/views', videoId: 'clip', csrf: 'test-token', sources: { original: '/original' }, initialQuality: 'optimized' });
+    const instance = videoPlayer({ viewUrl: '/videos/clip/views', videoId: 'clip', csrf: 'test-token', sources: { standard: '/standard', hd: '/hd' }, initialQuality: 'standard' });
     instance.$refs = { video: { currentTime: 0, paused: false, ended: false, playbackRate: 1, load() {} } };
     const events = [];
     instance.$dispatch = (name, detail) => events.push({ name, detail });
@@ -93,7 +93,7 @@ test('playing records one view and updates the displayed count across repeated e
 
     assert.equal(requests, 0);
     await Promise.all([instance.recordView(), instance.recordView()]);
-    instance.switchQuality('original');
+    instance.switchQuality('hd');
     await instance.recordView();
 
     assert.equal(requests, 1);
